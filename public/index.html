@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>小陈学长 · 新生答疑助手</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="sticky-bar hidden" id="stickyBar"></div>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-brand">
+          <div class="hero-logo"></div>
+          <div>
+            <strong>青岛滨海学院</strong>
+            <p>小陈学长新生答疑助手 · 在线</p>
+          </div>
+        </div>
+        <main class="hero-content">
+          <section class="hero-intro">
+            <div class="hero-image" id="heroImage"></div>
+            <div class="hero-copy">
+              <p class="eyebrow" id="siteTitle">青岛滨海学院</p>
+              <h1 id="heroTitle">入学答疑站</h1>
+              <p id="heroSubtitle">小陈学长 · 新生专属智能问答</p>
+              <p id="heroDescription" class="hero-description"></p>
+            </div>
+          </section>
+          <section class="hero-contacts" id="heroContacts"></section>
+          <section class="hero-actions" id="menuButtons"></section>
+        </main>
+      </header>
+      <section class="help-section">
+        <div class="qr-card">
+          <div class="qr-image" id="qrImage"></div>
+          <div>
+            <p>新生资料包</p>
+            <strong>添加微信 开学免费送福利</strong>
+            <p>长按识别二维码，获取更多校园信息</p>
+          </div>
+        </div>
+        <div class="help-copy">
+          <p id="schoolIntro">青岛滨海学院 · 26级新生答疑平台</p>
+          <p id="disclaimer">AI 回答仅供参考，招生、收费、报到等动态信息以学校官方通知为准。</p>
+        </div>
+      </section>
+      <section class="chat-panel">
+        <div class="chat-box">
+          <div class="chat-header">
+            <img id="siteLogo" src="https://qdbh2026.coze.site/school-logo.jpg" alt="青岛滨海学院" />
+            <p>输入你想了解的学校问题 ~</p>
+          </div>
+          <div class="chat-history" id="chatHistory"></div>
+          <form class="chat-form" id="chatForm">
+            <input id="chatInput" placeholder="输入你想了解的学校问题 ~" autocomplete="off" />
+            <button type="submit">问一下</button>
+          </form>
+        </div>
+      </section>
+    </div>
+
+    <div class="image-modal hidden" id="imageModal">
+      <div class="image-modal-backdrop" id="modalBackdrop"></div>
+      <div class="image-modal-card">
+        <button class="close-button" id="modalClose">×</button>
+        <img id="modalImage" alt="扫码图片" />
+        <p id="modalLabel"></p>
+        <p id="modalDescription"></p>
+      </div>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>

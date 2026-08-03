@@ -1,0 +1,15 @@
+{
+  "name": "qdbh2026-clone",
+  "version": "1.0.0",
+  "description": "青岛滨海学院新生答疑助手前后端应用",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["express","chat","admin","qdbh2026"],
+  "author": "AI Assistant",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.4"
+  }
+}

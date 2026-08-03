@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>后台配置 · 新生答疑助手</title>
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body>
+    <div class="admin-shell">
+      <header class="admin-header">
+        <div>
+          <h1>后台配置</h1>
+          <p>通过表单快速维护回答条目和页面内容，支持多种提问方式匹配。</p>
+        </div>
+        <a class="admin-back" href="/">返回首页</a>
+      </header>
+      <section class="admin-actions">
+        <button id="loadConfig">加载配置</button>
+        <button id="saveConfig">保存配置</button>
+      </section>
+      <div class="admin-layout">
+        <aside class="sidebar">
+          <button type="button" data-section="basic" class="active">基础信息</button>
+          <button type="button" data-section="sticky">悬浮联系卡</button>
+          <button type="button" data-section="feature">功能按钮</button>
+          <button type="button" data-section="faq">问答配置</button>
+        </aside>
+        <div class="content-area">
+          <form class="admin-form" id="adminForm">
+            <section class="section-panel" data-section="basic">
+              <h2>基础信息</h2>
+              <div class="field-row">
+                <label>站点标题</label>
+                <input id="siteTitle" />
+              </div>
+              <div class="field-row">
+                <label>页面标题</label>
+                <input id="heroTitle" />
+              </div>
+              <div class="field-row">
+                <label>副标题</label>
+                <input id="heroSubtitle" />
+              </div>
+              <div class="field-row">
+                <label>页面说明</label>
+                <textarea id="description"></textarea>
+              </div>
+              <div class="field-row">
+                <label>学校简介</label>
+                <input id="schoolIntro" />
+              </div>
+              <div class="field-row">
+                <label>免责声明</label>
+                <textarea id="disclaimer"></textarea>
+              </div>
+              <div class="field-row">
+                <label>网站 Logo 图片 URL</label>
+                <input id="siteLogoUrl" placeholder="https://..." />
+              </div>
+              <div class="field-row">
+                <label>主视觉背景图片 URL</label>
+                <input id="heroImageUrl" placeholder="https://..." />
+              </div>
+              <div class="field-row">
+                <label>二维码图片 URL</label>
+                <input id="qrImageUrl" placeholder="https://..." />
+              </div>
+              <div class="field-row">
+                <label>默认回答</label>
+                <textarea id="defaultAnswer"></textarea>
+              </div>
+            </section>
+
+            <section class="section-panel hidden" data-section="sticky">
+              <h2>悬浮联系卡</h2>
+              <div id="stickyContacts"></div>
+              <button type="button" class="secondary" id="addSticky">新增联系卡</button>
+            </section>
+
+            <section class="section-panel hidden" data-section="feature">
+              <h2>功能按钮</h2>
+              <div id="featureButtons"></div>
+              <button type="button" class="secondary" id="addFeature">新增功能按钮</button>
+            </section>
+
+            <section class="section-panel hidden" data-section="faq">
+              <h2>问答配置</h2>
+              <div id="faqItems"></div>
+              <button type="button" class="secondary" id="addFaq">新增回答项</button>
+            </section>
+
+            <section class="admin-status" id="status"></section>
+          </form>
+        </div>
+      </div>
+    </div>
+    <script src="admin.js"></script>
+  </body>
+</html>

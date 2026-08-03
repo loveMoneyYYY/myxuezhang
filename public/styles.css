@@ -1,0 +1,388 @@
+:root {
+  color-scheme: light;
+  font-family: "Noto Sans SC", "Segoe UI", "Microsoft YaHei", sans-serif;
+  --bg: #f7f8fc;
+  --surface: #ffffff;
+  --surface-strong: #eef2ff;
+  --text: #111827;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --brand: #4338ca;
+  --brand-soft: #eef2ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at top, rgba(79, 70, 229, 0.12), transparent 30%),
+    linear-gradient(180deg, #f8fafc 0%, #f7f8fc 100%);
+  color: var(--text);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.page-shell {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 20px 18px 32px;
+}
+
+.hero {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.06);
+}
+
+.hero-brand {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.hero-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #4338ca, #7c3aed);
+  box-shadow: 0 18px 35px rgba(67, 56, 202, 0.18);
+}
+
+.hero-brand strong {
+  display: block;
+  font-size: 1.15rem;
+}
+
+.hero-brand p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.hero-content {
+  display: grid;
+  gap: 24px;
+}
+
+.hero-intro {
+  display: grid;
+  gap: 24px;
+}
+
+.hero-image {
+  min-height: 260px;
+  border-radius: 28px;
+  background: url('https://qdbh2026.coze.site/hero-bg.png') center/cover no-repeat;
+}
+
+.hero-copy {
+  display: grid;
+  gap: 12px;
+}
+
+.hero-copy .eyebrow {
+  color: #4338ca;
+  font-weight: 700;
+}
+
+.hero-description {
+  color: var(--muted);
+  max-width: 36rem;
+  line-height: 1.75;
+}
+
+.hero-copy h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.hero-cards,
+.hero-actions,
+.hero-contacts {
+  display: grid;
+  gap: 14px;
+}
+
+.hero-cards,
+.hero-contacts {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.hero-card,
+.menu-button,
+.contact-card {
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  padding: 18px;
+  box-shadow: 0 18px 35px rgba(15, 23, 42, 0.06);
+}
+
+.hero-card strong,
+.menu-button strong {
+  display: block;
+  margin-top: 10px;
+}
+
+.hero-actions {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.menu-button,
+.contact-card {
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.menu-button:hover,
+.contact-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(67, 56, 202, 0.26);
+  background: #faf8ff;
+}
+
+.help-section {
+  margin-top: 28px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1.4fr 1fr;
+}
+
+.qr-card {
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 18px;
+  align-items: center;
+}
+
+.qr-image {
+  min-height: 132px;
+  border-radius: 20px;
+  background: url('https://qdbh2026.coze.site/wechat-qr.png') center/cover no-repeat;
+}
+
+.help-copy {
+  display: grid;
+  gap: 10px;
+  padding: 20px 20px 20px 24px;
+  background: rgba(67, 56, 202, 0.04);
+  border-radius: 24px;
+}
+
+.help-copy p {
+  margin: 0;
+}
+
+.chat-panel {
+  margin-top: 28px;
+}
+
+.chat-box {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 30px;
+  border: 1px solid rgba(229, 231, 235, 0.9);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+}
+
+.chat-header {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 22px;
+}
+
+.chat-header img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 16px;
+}
+
+.hero-image {
+  min-height: 260px;
+  border-radius: 28px;
+  background: url('https://qdbh2026.coze.site/hero-bg.png') center/cover no-repeat;
+}
+
+.qr-image {
+  min-height: 132px;
+  border-radius: 20px;
+  background: url('https://qdbh2026.coze.site/wechat-qr.png') center/cover no-repeat;
+}
+
+.chat-header p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.chat-history {
+  min-height: 280px;
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+  background: #f8fafc;
+}
+
+.chat-message {
+  padding: 16px;
+  border-radius: 24px;
+  line-height: 1.75;
+}
+
+.chat-message.user {
+  background: #4338ca;
+  color: #fff;
+  justify-self: end;
+  max-width: 90%;
+}
+
+.chat-message.ai {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  max-width: 90%;
+}
+
+.chat-form {
+  display: flex;
+  gap: 12px;
+  padding: 18px;
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+}
+
+.chat-form input {
+  flex: 1;
+  min-width: 0;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  padding: 14px 18px;
+  background: #f8fafc;
+  color: var(--text);
+}
+
+.chat-form button {
+  border: none;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  padding: 0 22px;
+  min-height: 48px;
+  cursor: pointer;
+}
+
+.sticky-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  display: flex;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 10px 20px;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.95);
+  box-shadow: 0 14px 24px rgba(15, 23, 42, 0.08);
+}
+
+.sticky-bar.hidden {
+  display: none;
+}
+
+.sticky-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  background: #fff;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: transform 180ms ease, background 180ms ease;
+}
+
+.sticky-item:hover {
+  transform: translateY(-1px);
+  background: #f8f7ff;
+}
+
+.image-modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+}
+
+.image-modal.hidden {
+  display: none;
+}
+
+.image-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.image-modal-card {
+  position: relative;
+  width: min(92vw, 420px);
+  background: #fff;
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+  z-index: 1;
+  display: grid;
+  gap: 16px;
+}
+
+.image-modal-card img {
+  width: 100%;
+  border-radius: 18px;
+  object-fit: cover;
+}
+
+.close-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+  cursor: pointer;
+  font-size: 1.3rem;
+}
+
+@media (max-width: 960px) {
+  .help-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .page-shell {
+    padding: 16px 12px 24px;
+  }
+
+  .hero {
+    padding: 18px;
+  }
+
+  .hero-image {
+    min-height: 200px;
+  }
+}
