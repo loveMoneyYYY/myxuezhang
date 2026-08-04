@@ -503,6 +503,57 @@ h1 {
   object-fit: cover;
 }
 
+.entry-modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 1200;
+}
+
+.entry-modal.hidden {
+  display: none;
+}
+
+.entry-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.entry-modal-card {
+  position: relative;
+  width: min(92vw, 420px);
+  background: #fff;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+  z-index: 1;
+  display: grid;
+  gap: 14px;
+  text-align: center;
+}
+
+.entry-modal-title {
+  margin: 0;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 1.06rem;
+}
+
+.entry-modal-card img {
+  width: min(100%, 320px);
+  margin: 0 auto;
+  border-radius: 16px;
+  object-fit: cover;
+}
+
+.entry-modal-tip {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
 .close-button {
   position: absolute;
   top: 16px;

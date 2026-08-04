@@ -23,7 +23,13 @@ const modalClose = document.getElementById('modalClose');
 const modalImage = document.getElementById('modalImage');
 const modalLabel = document.getElementById('modalLabel');
 const modalDescription = document.getElementById('modalDescription');
+const entryModal = document.getElementById('entryModal');
+const entryModalBackdrop = document.getElementById('entryModalBackdrop');
+const entryModalClose = document.getElementById('entryModalClose');
+const entryModalImage = document.getElementById('entryModalImage');
+const entryModalTitle = document.getElementById('entryModalTitle');
 let chatScrollTimer = 0;
+let entryModalShown = false;
 
 const defaultConfig = {
   siteTitle: '湖南科技大学',
@@ -178,6 +184,14 @@ function renderContent() {
   const qrUrl = normalizeAssetUrl(clientConfig.qrImageUrl) || normalizeAssetUrl(defaultConfig.qrImageUrl);
   qrImage.style.backgroundImage = qrUrl ? `url('${qrUrl}')` : 'none';
 
+  const entryModalContent = resolveEntryModalContent(clientConfig);
+  if (entryModalTitle) {
+    entryModalTitle.textContent = entryModalContent.title;
+  }
+  if (entryModalImage) {
+    entryModalImage.src = entryModalContent.imageUrl;
+  }
+
   heroInfoCards.innerHTML = '';
   if (clientConfig.address) {
     heroInfoCards.appendChild(createInfoCard('📍', '学校地址', clientConfig.address));
@@ -208,6 +222,35 @@ function showContactImage(item) {
 
 function closeImageModal() {
   imageModal.classList.add('hidden');
+}
+
+function resolveEntryModalContent(config) {
+  const fromContact = (config.stickyContacts || []).find((item) =>
+    String(item.label || '').includes('新生群')
+  );
+
+  return {
+    title: (fromContact && fromContact.label) || '26级权威新生群',
+    imageUrl:
+      normalizeAssetUrl(fromContact && fromContact.imageUrl) ||
+      normalizeAssetUrl(config.qrImageUrl) ||
+      '/pic/新生群.jpg'
+  };
+}
+
+function showEntryModal() {
+  if (!entryModal || entryModalShown) {
+    return;
+  }
+  entryModalShown = true;
+  entryModal.classList.remove('hidden');
+}
+
+function closeEntryModal() {
+  if (!entryModal) {
+    return;
+  }
+  entryModal.classList.add('hidden');
 }
 
 async function handleSubmit(event) {
@@ -249,8 +292,18 @@ if (window.MutationObserver && chatHistory) {
 chatForm.addEventListener('submit', handleSubmit);
 modalBackdrop.addEventListener('click', closeImageModal);
 modalClose.addEventListener('click', closeImageModal);
+if (entryModalBackdrop) {
+  entryModalBackdrop.addEventListener('click', closeEntryModal);
+}
+if (entryModalClose) {
+  entryModalClose.addEventListener('click', closeEntryModal);
+}
 
 loadConfig().catch((error) => {
   appendMessage('加载配置失败，请检查服务器。', 'ai');
   console.error(error);
 });
+
+window.setTimeout(() => {
+  showEntryModal();
+}, 180);
