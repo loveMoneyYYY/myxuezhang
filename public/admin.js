@@ -19,6 +19,10 @@ const addFeatureButton = document.getElementById('addFeature');
 const addFaqButton = document.getElementById('addFaq');
 const sectionButtons = document.querySelectorAll('.sidebar button');
 const sectionPanels = document.querySelectorAll('.section-panel');
+const saveModal = document.getElementById('saveModal');
+const dialogBackdrop = document.getElementById('dialogBackdrop');
+const closeModalButton = document.getElementById('closeModal');
+const saveModalMessage = document.getElementById('saveModalMessage');
 
 let currentConfig = {};
 
@@ -198,6 +202,7 @@ async function saveConfig() {
     if (result.ok) {
       currentConfig = config;
       setStatus('保存成功，前端和问答结果已更新。');
+      showModal('配置已成功保存，可返回首页查看最新效果。');
     } else {
       setStatus('保存失败：' + (result.error || '未知错误。'));
     }
@@ -219,4 +224,11 @@ addFaqButton.addEventListener('click', () => faqItemsContainer.appendChild(creat
 sectionButtons.forEach((button) => {
   button.addEventListener('click', () => selectSection(button.dataset.section));
 });
+closeModalButton.addEventListener('click', () => saveModal.classList.add('hidden'));
+dialogBackdrop.addEventListener('click', () => saveModal.classList.add('hidden'));
 window.addEventListener('load', loadConfig);
+
+function showModal(message) {
+  saveModalMessage.textContent = message;
+  saveModal.classList.remove('hidden');
+}

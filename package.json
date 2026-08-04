@@ -1,7 +1,7 @@
-{
+﻿{
   "name": "qdbh2026-clone",
   "version": "1.0.0",
-  "description": "青岛滨海学院新生答疑助手前后端应用",
+  "description": "湖南科技大学新生答疑助手前后端应用",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

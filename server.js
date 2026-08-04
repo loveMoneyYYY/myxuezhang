@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs').promises;
 const path = require('path');
 const crypto = require('crypto');
+const { findAnswer } = require('./lib/qa');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -52,52 +53,6 @@ function authMiddleware(req, res, next) {
 function getPublicConfig(config) {
   const { adminPassword, ...publicConfig } = config;
   return publicConfig;
-}
-
-function normalize(text) {
-  return String(text || '')
-    .toLowerCase()
-
-    .replace(/[\p{P}\p{S}]+/gu, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function textMatches(needle, haystack) {
-  return normalize(haystack).includes(normalize(needle));
-}
-
-function findAnswer(config, question) {
-  const userText = normalize(question);
-  if (!userText) {
-    return config.defaultAnswer || '请输入您的问题。';
-  }
-
-  const matched = (config.faq || []).find((item) => {
-    if (item.examples && Array.isArray(item.examples)) {
-      if (item.examples.some((text) => textMatches(text, userText))) {
-        return true;
-      }
-    }
-    if (item.keywords && Array.isArray(item.keywords)) {
-      if (item.keywords.some((keyword) => textMatches(keyword, userText))) {
-        return true;
-      }
-    }
-    if (item.name && textMatches(item.name, userText)) {
-      return true;
-    }
-    if (item.question && textMatches(item.question, userText)) {
-      return true;
-    }
-    return false;
-  });
-
-  if (matched) {
-    return matched.answer;
-  }
-
-  return config.defaultAnswer || '这是一个常见问题，请稍后再试。';
 }
 
 app.use(express.json());

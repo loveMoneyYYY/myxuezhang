@@ -248,6 +248,59 @@ body {
   color: var(--muted);
 }
 
+.dialog-modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 1200;
+}
+
+.dialog-modal.hidden {
+  display: none;
+}
+
+.dialog-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(13, 14, 48, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.dialog-card {
+  position: relative;
+  width: min(92vw, 420px);
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 28px 24px;
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.18);
+  z-index: 1;
+  display: grid;
+  gap: 18px;
+  text-align: center;
+}
+
+.dialog-card h3 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.dialog-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.dialog-card button {
+  width: 100%;
+  border: none;
+  background: var(--brand);
+  color: #fff;
+  border-radius: 999px;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+
 @media (max-width: 960px) {
   .admin-layout {
     grid-template-columns: 1fr;
