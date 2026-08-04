@@ -69,10 +69,10 @@ button {
 
 .brand-icon {
   width: 42px;
-  height: 36px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #4338ca, #7c3aed);
-  box-shadow: 0 20px 40px rgba(67, 56, 202, 0.25);
+  height: 42px;
+  border-radius: 50%;
+  background: url('/pic/学校logo.png') center/cover no-repeat;
+  box-shadow: 0 20px 40px rgba(67, 56, 202, 0.18);
 }
 
 .brand-copy strong,
@@ -130,7 +130,7 @@ button {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.46), rgba(0, 0, 0, 0.12));
+  background: transparent;
 }
 
 .hero-copy {
@@ -374,25 +374,6 @@ h1 {
   margin-top: 28px;
 }
 
-.chat-header {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  padding: 22px;
-}
-
-.chat-header img {
-  width: 56px;
-  height: 56px;
-  border-radius: 18px;
-  object-fit: cover;
-}
-
-.chat-header p {
-  margin: 0;
-  color: var(--muted);
-}
-
 .chat-history {
   min-height: 260px;
   padding: 18px;
@@ -405,6 +386,7 @@ h1 {
   padding: 16px;
   border-radius: 22px;
   line-height: 1.75;
+  scroll-margin-bottom: 120px;
 }
 
 .chat-message.user {

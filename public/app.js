@@ -23,6 +23,7 @@ const modalClose = document.getElementById('modalClose');
 const modalImage = document.getElementById('modalImage');
 const modalLabel = document.getElementById('modalLabel');
 const modalDescription = document.getElementById('modalDescription');
+let chatScrollTimer = 0;
 
 const defaultConfig = {
   siteTitle: '湖南科技大学',
@@ -119,12 +120,27 @@ function createInfoCard(icon, title, text) {
   return card;
 }
 
+function scrollToLatestMessage() {
+  const latestMessage = chatHistory.lastElementChild;
+  if (!latestMessage) {
+    return;
+  }
+
+  if (chatScrollTimer) {
+    window.clearTimeout(chatScrollTimer);
+  }
+
+  chatScrollTimer = window.setTimeout(() => {
+    latestMessage.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
+  }, 0);
+}
+
 function appendMessage(text, role) {
   const el = document.createElement('div');
   el.className = `chat-message ${role}`;
   el.textContent = text;
   chatHistory.appendChild(el);
-  chatHistory.scrollTop = chatHistory.scrollHeight;
+  scrollToLatestMessage();
 }
 
 async function loadConfig() {
@@ -154,7 +170,9 @@ function renderContent() {
   heroSubtitle.textContent = clientConfig.heroSubtitle || '白羊学长 · 新生专属智能问答';
   heroDescription.textContent = clientConfig.description || '';
   const siteLogoUrl = normalizeAssetUrl(clientConfig.siteLogoUrl) || normalizeAssetUrl(defaultConfig.siteLogoUrl) || '/pic/学校logo.png';
-  siteLogo.src = siteLogoUrl;
+  if (siteLogo) {
+    siteLogo.src = siteLogoUrl;
+  }
   const heroUrl = normalizeAssetUrl(clientConfig.heroImageUrl) || normalizeAssetUrl(defaultConfig.heroImageUrl);
   heroImage.style.backgroundImage = heroUrl ? `url('${heroUrl}')` : 'none';
   const qrUrl = normalizeAssetUrl(clientConfig.qrImageUrl) || normalizeAssetUrl(defaultConfig.qrImageUrl);
@@ -214,9 +232,18 @@ async function handleSubmit(event) {
     });
     const result = await response.json();
     chatHistory.lastChild.textContent = result.answer || '出错了，请稍后重试。';
+    scrollToLatestMessage();
   } catch (error) {
     chatHistory.lastChild.textContent = '网络异常，请检查服务器是否已启动。';
+    scrollToLatestMessage();
   }
+}
+
+if (window.MutationObserver && chatHistory) {
+  const chatObserver = new MutationObserver(() => {
+    scrollToLatestMessage();
+  });
+  chatObserver.observe(chatHistory, { childList: true, subtree: false });
 }
 
 chatForm.addEventListener('submit', handleSubmit);
