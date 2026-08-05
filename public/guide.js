@@ -157,7 +157,7 @@ function createAttachment(item) {
     link.href = url;
     link.target = '_blank';
     link.rel = 'noopener';
-    link.textContent = '新窗口打开 PDF';
+    link.textContent = '点击浏览完整版文件';
     box.appendChild(link);
     return box;
   }
@@ -260,6 +260,16 @@ function lockPageZoom() {
     if (event.touches.length > 1) {
       event.preventDefault();
     }
+  }, { passive: false });
+
+  // Prevent double-tap zoom on mobile browsers.
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', (event) => {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+      event.preventDefault();
+    }
+    lastTouchEnd = now;
   }, { passive: false });
 }
 
