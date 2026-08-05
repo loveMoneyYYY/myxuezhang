@@ -15,7 +15,7 @@ function resolvePort() {
     }
   }
 
-  return 80;
+  return 3000;
 }
 
 const PORT = resolvePort();
@@ -202,6 +202,21 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
   });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
-});
+function startServer(port) {
+  const server = app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running on http://0.0.0.0:${port}`);
+  });
+
+  server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE' && port === 80 && !process.env.PORT && !process.env.APP_PORT) {
+      console.warn('Port 80 is already in use, trying port 3000 instead.');
+      server.close(() => startServer(3000));
+      return;
+    }
+
+    console.error(`Failed to start server on port ${port}:`, error);
+    process.exit(1);
+  });
+}
+
+startServer(PORT);
