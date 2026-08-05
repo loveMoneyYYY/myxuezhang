@@ -8,6 +8,8 @@ const menuButtons = document.getElementById('menuButtons');
 const heroInfoCards = document.getElementById('heroInfoCards');
 const brandTitle = document.getElementById('brandTitle');
 const brandSubtitle = document.getElementById('brandSubtitle');
+const topbarWechatButton = document.getElementById('topbarWechatButton');
+const topbarAppButton = document.getElementById('topbarAppButton');
 const siteTitle = document.getElementById('siteTitle');
 const heroTitle = document.getElementById('heroTitle');
 const heroSubtitle = document.getElementById('heroSubtitle');
@@ -32,6 +34,9 @@ const entryModalBackdrop = document.getElementById('entryModalBackdrop');
 const entryModalClose = document.getElementById('entryModalClose');
 const entryModalImage = document.getElementById('entryModalImage');
 const entryModalTitle = document.getElementById('entryModalTitle');
+const downloadModal = document.getElementById('downloadModal');
+const downloadModalBackdrop = document.getElementById('downloadModalBackdrop');
+const downloadModalClose = document.getElementById('downloadModalClose');
 let chatScrollTimer = 0;
 let entryModalShown = false;
 
@@ -243,6 +248,36 @@ function closeImageModal() {
   imageModal.classList.add('hidden');
 }
 
+function showTopbarWechatModal() {
+  const config = clientConfig || defaultConfig;
+  const wechatContact = (config.stickyContacts || []).find((item) =>
+    String(item.label || '').includes('学长微信')
+  );
+  const imageUrl =
+    normalizeAssetUrl(wechatContact && wechatContact.imageUrl) ||
+    normalizeAssetUrl(config.qrImageUrl) ||
+    normalizeAssetUrl(defaultConfig.qrImageUrl);
+
+  modalImage.src = imageUrl;
+  modalImage.alt = '学长微信二维码';
+  modalLabel.textContent = '学长微信';
+  modalDescription.textContent =
+    (wechatContact && wechatContact.description) || '扫码添加学长微信，获取专业、宿舍和生活建议。';
+  imageModal.classList.remove('hidden');
+}
+
+function showDownloadModal() {
+  if (downloadModal) {
+    downloadModal.classList.remove('hidden');
+  }
+}
+
+function closeDownloadModal() {
+  if (downloadModal) {
+    downloadModal.classList.add('hidden');
+  }
+}
+
 function resolveEntryModalContent(config) {
   const fromContact = (config.stickyContacts || []).find((item) =>
     String(item.label || '').includes('新生群')
@@ -311,11 +346,23 @@ if (window.MutationObserver && chatHistory) {
 chatForm.addEventListener('submit', handleSubmit);
 modalBackdrop.addEventListener('click', closeImageModal);
 modalClose.addEventListener('click', closeImageModal);
+if (topbarWechatButton) {
+  topbarWechatButton.addEventListener('click', showTopbarWechatModal);
+}
+if (topbarAppButton) {
+  topbarAppButton.addEventListener('click', showDownloadModal);
+}
 if (entryModalBackdrop) {
   entryModalBackdrop.addEventListener('click', closeEntryModal);
 }
 if (entryModalClose) {
   entryModalClose.addEventListener('click', closeEntryModal);
+}
+if (downloadModalBackdrop) {
+  downloadModalBackdrop.addEventListener('click', closeDownloadModal);
+}
+if (downloadModalClose) {
+  downloadModalClose.addEventListener('click', closeDownloadModal);
 }
 
 if (heroBadge) {

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>白羊学长 · 新生答疑助手</title>
     <link rel="icon" href="/pic/学校logo.png?v=20260805" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=20260805" />
+    <link rel="stylesheet" href="styles.css?v=20260805-topbar-actions-v1" />
   </head>
   <body>
     <div id="root">
@@ -18,6 +18,11 @@
               <small id="brandSubtitle">白羊学长新生答疑助手 · 在线</small>
             </div>
           </div>
+          <nav class="topbar-actions" aria-label="快捷入口">
+            <button type="button" class="topbar-action" id="topbarWechatButton">学长微信</button>
+            <span class="topbar-divider" aria-hidden="true"></span>
+            <button type="button" class="topbar-action" id="topbarAppButton">科大APP下载</button>
+          </nav>
         </div>
       </header>
 
@@ -110,6 +115,16 @@
         <p class="entry-modal-tip">长按识别二维码，点击空白处可关闭</p>
       </div>
     </div>
-    <script src="app.js?v=20260805"></script>
+    <div class="download-modal hidden" id="downloadModal" role="dialog" aria-modal="true" aria-labelledby="downloadModalTitle">
+      <div class="download-modal-backdrop" id="downloadModalBackdrop"></div>
+      <div class="download-modal-card">
+        <button class="close-button" id="downloadModalClose" aria-label="关闭下载弹窗">×</button>
+        <div class="download-modal-icon" aria-hidden="true">📱</div>
+        <p class="download-modal-title" id="downloadModalTitle">科大 APP 下载</p>
+        <p class="download-modal-description">点击下方按钮，前往科大 APP 下载页面。</p>
+        <a class="download-modal-link" href="http://qrcode.dice.supwisdom.com/79930210963" target="_blank" rel="noopener noreferrer">去下载</a>
+      </div>
+    </div>
+    <script src="app.js?v=20260805-topbar-actions-v1"></script>
   </body>
 </html>

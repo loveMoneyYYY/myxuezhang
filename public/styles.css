@@ -90,6 +90,40 @@ button {
   opacity: 0.88;
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.topbar-action {
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.topbar-action:hover,
+.topbar-action:focus-visible {
+  border-color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.24);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.topbar-divider {
+  width: 1px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
 .page-content {
   max-width: 720px;
   margin: 0 auto;
@@ -555,6 +589,84 @@ h1 {
   object-fit: cover;
 }
 
+.download-modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 1200;
+}
+
+.download-modal.hidden {
+  display: none;
+}
+
+.download-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.58);
+}
+
+.download-modal-card {
+  position: relative;
+  width: min(88vw, 360px);
+  padding: 30px 24px 24px;
+  border: 1px solid rgba(229, 231, 235, 0.9);
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.2);
+  text-align: center;
+  z-index: 1;
+}
+
+.download-modal-icon {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 14px;
+  place-items: center;
+  border-radius: 18px;
+  background: var(--brand-soft);
+  font-size: 1.8rem;
+}
+
+.download-modal-title,
+.download-modal-description {
+  margin: 0;
+}
+
+.download-modal-title {
+  color: var(--text);
+  font-size: 1.14rem;
+  font-weight: 800;
+}
+
+.download-modal-description {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.download-modal-link {
+  display: block;
+  margin-top: 20px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  transition: filter 160ms ease, transform 160ms ease;
+}
+
+.download-modal-link:hover,
+.download-modal-link:focus-visible {
+  filter: brightness(1.08);
+  outline: none;
+  transform: translateY(-1px);
+}
+
 .entry-modal {
   position: fixed;
   inset: 0;
@@ -648,6 +760,46 @@ h1 {
   .bottom-bar {
     padding-left: 14px;
     padding-right: 14px;
+  }
+
+  .topbar-inner {
+    gap: 8px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .brand {
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .brand-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .brand-copy {
+    min-width: 0;
+  }
+
+  .brand-copy strong,
+  .brand-copy small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .topbar-actions {
+    gap: 3px;
+  }
+
+  .topbar-action {
+    padding: 7px 6px;
+    font-size: 0.69rem;
+  }
+
+  .topbar-divider {
+    height: 18px;
   }
 
   .hero-top {
