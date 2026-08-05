@@ -5,17 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
     <title>新生报到导览 · 白羊学长</title>
     <link rel="icon" href="/pic/学校logo.png" type="image/png" />
-    <link rel="stylesheet" href="guide.css?v=20260805-attachment-display-v2" />
+    <link rel="stylesheet" href="guide.css?v=20260805-guide-topbar-v1" />
   </head>
   <body>
     <div class="guide-shell">
       <header class="guide-topbar">
         <div class="guide-topbar-inner">
-          <a class="back-link" href="/">返回首页</a>
-          <div class="topbar-copy">
-            <strong id="pageTitle">新生报到导览</strong>
-            <small id="pageSubtitle">分类帖文 · 可折叠查看</small>
+          <div class="guide-topbar-left">
+            <a class="back-link" href="/">返回首页</a>
+            <div class="topbar-copy">
+              <strong id="pageTitle">新生报到导览</strong>
+              <small id="pageSubtitle">分类帖文 · 可折叠查看</small>
+            </div>
           </div>
+          <nav class="guide-topbar-actions" aria-label="快捷入口">
+            <button type="button" class="guide-topbar-action" id="guideWechatButton">学长微信</button>
+            <span class="guide-topbar-divider" aria-hidden="true"></span>
+            <button type="button" class="guide-topbar-action" id="guideAppButton">科大APP下载</button>
+          </nav>
         </div>
       </header>
 
@@ -59,6 +66,27 @@
       </article>
     </template>
 
-    <script src="guide.js?v=20260805-attachment-display-v2"></script>
+    <div class="guide-modal hidden" id="guideWechatModal" role="dialog" aria-modal="true" aria-labelledby="guideWechatTitle">
+      <div class="guide-modal-backdrop" id="guideWechatBackdrop"></div>
+      <div class="guide-wechat-card">
+        <button class="guide-close-button" id="guideWechatClose" aria-label="关闭微信二维码">×</button>
+        <p class="guide-modal-title" id="guideWechatTitle">学长微信</p>
+        <img id="guideWechatImage" alt="学长微信二维码" />
+        <p class="guide-modal-tip" id="guideWechatTip">扫码添加学长微信，获取专业、宿舍和生活建议。</p>
+      </div>
+    </div>
+
+    <div class="guide-modal hidden" id="guideAppModal" role="dialog" aria-modal="true" aria-labelledby="guideAppTitle">
+      <div class="guide-modal-backdrop" id="guideAppBackdrop"></div>
+      <div class="guide-download-card">
+        <button class="guide-close-button" id="guideAppClose" aria-label="关闭下载弹窗">×</button>
+        <div class="guide-download-icon" aria-hidden="true">📱</div>
+        <p class="guide-modal-title" id="guideAppTitle">科大 APP 下载</p>
+        <p class="guide-modal-tip">点击下方按钮，前往科大 APP 下载页面。</p>
+        <a class="guide-download-link" href="http://qrcode.dice.supwisdom.com/79930210963" target="_blank" rel="noopener noreferrer">去下载</a>
+      </div>
+    </div>
+
+    <script src="guide.js?v=20260805-guide-topbar-v1"></script>
   </body>
 </html>

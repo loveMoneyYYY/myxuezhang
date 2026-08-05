@@ -7,6 +7,16 @@ const pageSubtitle = document.getElementById('pageSubtitle');
 const heroTitle = document.getElementById('heroTitle');
 const heroSummary = document.getElementById('heroSummary');
 const guideHero = document.getElementById('guideHero');
+const guideWechatButton = document.getElementById('guideWechatButton');
+const guideAppButton = document.getElementById('guideAppButton');
+const guideWechatModal = document.getElementById('guideWechatModal');
+const guideWechatBackdrop = document.getElementById('guideWechatBackdrop');
+const guideWechatClose = document.getElementById('guideWechatClose');
+const guideWechatImage = document.getElementById('guideWechatImage');
+const guideWechatTip = document.getElementById('guideWechatTip');
+const guideAppModal = document.getElementById('guideAppModal');
+const guideAppBackdrop = document.getElementById('guideAppBackdrop');
+const guideAppClose = document.getElementById('guideAppClose');
 
 const defaultGuideConfig = {
   pageTitle: '新生报到导览',
@@ -59,6 +69,7 @@ const defaultGuideConfig = {
 };
 
 let guideConfig = defaultGuideConfig;
+let siteConfig = {};
 let activeCategoryId = '';
 
 function normalizeAssetUrl(value) {
@@ -273,13 +284,45 @@ function lockPageZoom() {
   }, { passive: false });
 }
 
+function getWechatContact(config) {
+  const contacts = config && Array.isArray(config.stickyContacts) ? config.stickyContacts : [];
+  return contacts.find((item) => String(item.label || '').includes('学长微信')) || null;
+}
+
+function showWechatModal() {
+  const contact = getWechatContact(siteConfig);
+  const imageUrl =
+    normalizeAssetUrl(contact && contact.imageUrl) ||
+    normalizeAssetUrl(siteConfig.qrImageUrl) ||
+    '/pic/wechat-qr.svg';
+
+  guideWechatImage.src = imageUrl;
+  guideWechatTip.textContent =
+    (contact && contact.description) || '扫码添加学长微信，获取专业、宿舍和生活建议。';
+  guideWechatModal.classList.remove('hidden');
+}
+
+function closeWechatModal() {
+  guideWechatModal.classList.add('hidden');
+}
+
+function showAppModal() {
+  guideAppModal.classList.remove('hidden');
+}
+
+function closeAppModal() {
+  guideAppModal.classList.add('hidden');
+}
+
 async function initPage() {
   try {
     const response = await fetch(configEndpoint);
     const config = await response.json();
+    siteConfig = config || {};
     guideConfig = getGuideConfig(config);
   } catch (error) {
     console.error('Load guide config failed:', error);
+    siteConfig = {};
     guideConfig = defaultGuideConfig;
   }
 
@@ -288,6 +331,18 @@ async function initPage() {
   renderCategories();
   renderPosts();
 }
+
+guideWechatButton.addEventListener('click', showWechatModal);
+guideAppButton.addEventListener('click', showAppModal);
+guideWechatBackdrop.addEventListener('click', closeWechatModal);
+guideWechatClose.addEventListener('click', closeWechatModal);
+guideAppBackdrop.addEventListener('click', closeAppModal);
+guideAppClose.addEventListener('click', closeAppModal);
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  closeWechatModal();
+  closeAppModal();
+});
 
 lockPageZoom();
 initPage();
