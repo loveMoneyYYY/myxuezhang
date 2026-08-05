@@ -131,10 +131,6 @@ function createAttachment(item) {
   const box = document.createElement('div');
   box.className = 'attachment-item';
 
-  const title = document.createElement('strong');
-  title.textContent = item.name || '附件';
-  box.appendChild(title);
-
   const mime = String(item.mimeType || '').toLowerCase();
   const url = normalizeAssetUrl(item.url || '');
   if (!url) {
@@ -145,7 +141,7 @@ function createAttachment(item) {
     const img = document.createElement('img');
     img.className = 'attachment-image';
     img.src = url;
-    img.alt = item.name || '图片附件';
+    img.alt = '图片附件';
     box.appendChild(img);
     return box;
   }
@@ -153,8 +149,8 @@ function createAttachment(item) {
   if (mime.includes('pdf') || url.toLowerCase().endsWith('.pdf')) {
     const frame = document.createElement('iframe');
     frame.className = 'attachment-pdf';
-    frame.src = `${url}#toolbar=0&navpanes=0`;
-    frame.title = item.name || 'PDF 附件';
+    frame.src = `${url}#toolbar=0&navpanes=0&zoom=100`;
+    frame.title = 'PDF 附件';
     box.appendChild(frame);
 
     const link = document.createElement('a');
@@ -170,7 +166,7 @@ function createAttachment(item) {
   link.href = url;
   link.target = '_blank';
   link.rel = 'noopener';
-  link.textContent = item.name || '下载附件';
+  link.textContent = '打开附件';
   box.appendChild(link);
 
   return box;
