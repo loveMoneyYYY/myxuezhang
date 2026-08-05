@@ -30,9 +30,26 @@ jobs:
 
             git fetch origin master
             git pull --ff-only origin master
+
+            source /root/.nvm/nvm.sh
+            nvm use 24
+            node -v
             npm install --production
-            pm2 restart qdbh2026 --update-env
+
+            pm2 kill || true
+            pm2 start ecosystem.config.js --update-env
+            pm2 save
 
             test "$(git rev-parse HEAD)" = "$(git rev-parse origin/master)"
-            curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3000/ > /dev/null
+            for attempt in $(seq 1 10); do
+              if curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3000/ > /dev/null; then
+                break
+              fi
+              if [ "$attempt" -eq 10 ]; then
+                pm2 status
+                pm2 logs qdbh2026 --lines 80 --nostream || true
+                exit 1
+              fi
+              sleep 2
+            done
             echo "Deployed commit: $(git rev-parse --short HEAD)"
