@@ -221,6 +221,7 @@ function renderPosts() {
     if (attachments.length === 0) {
       attachmentSection.classList.add('hidden');
     } else {
+      attachmentSection.classList.remove('hidden');
       attachments.forEach((item) => attachmentList.appendChild(createAttachment(item)));
     }
 
