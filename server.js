@@ -92,7 +92,9 @@ fs.mkdir(uploadDir, { recursive: true }).catch((error) => {
 });
 
 app.use((req, res, next) => {
-  const protectedPaths = ['/admin', '/admin.html', '/admin.js', '/admin.css'];
+  // The admin page and write APIs are protected. Static CSS/JS must remain
+  // public so the login page and the proxied admin page can render correctly.
+  const protectedPaths = ['/admin', '/admin.html'];
   const needAuth =
     protectedPaths.includes(req.path) ||
     (req.path === '/api/config' && req.method === 'POST') ||

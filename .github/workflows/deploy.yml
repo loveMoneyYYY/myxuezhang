@@ -40,6 +40,14 @@ jobs:
             pm2 start ecosystem.config.js --update-env
             pm2 save
 
+            # Re-apply the reverse-proxy config on every deployment so port 80
+            # cannot keep pointing at an old site or stale Nginx configuration.
+            sudo install -m 644 deploy/nginx-qdbh2026.conf /etc/nginx/sites-available/qdbh2026.conf
+            sudo ln -sf /etc/nginx/sites-available/qdbh2026.conf /etc/nginx/sites-enabled/qdbh2026.conf
+            sudo rm -f /etc/nginx/sites-enabled/default
+            sudo nginx -t
+            sudo systemctl reload nginx || sudo service nginx reload
+
             test "$(git rev-parse HEAD)" = "$(git rev-parse origin/master)"
             for attempt in $(seq 1 10); do
               if curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3000/ > /dev/null; then
@@ -51,5 +59,17 @@ jobs:
                 exit 1
               fi
               sleep 2
+            done
+
+            # Verify both public entry points and make sure Nginx returns the
+            # same page as the Node process for the main public routes.
+            for path in / /guide /admin /admin/login /admin.css /admin.js; do
+              curl --fail --silent --show-error --max-time 10 "http://127.0.0.1:3000${path}" > /dev/null
+              curl --fail --silent --show-error --max-time 10 "http://127.0.0.1${path}" > /dev/null
+            done
+            for path in / /guide /admin.css /admin.js; do
+              node_hash=$(curl --fail --silent --show-error --max-time 10 "http://127.0.0.1:3000${path}" | sha256sum | awk '{print $1}')
+              nginx_hash=$(curl --fail --silent --show-error --max-time 10 "http://127.0.0.1${path}" | sha256sum | awk '{print $1}')
+              test "$node_hash" = "$nginx_hash"
             done
             echo "Deployed commit: $(git rev-parse --short HEAD)"
