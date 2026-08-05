@@ -4,14 +4,16 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
+
+concurrency:
+  group: qdbh2026-production
+  cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
       - name: Deploy to ECS via SSH
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -20,7 +22,17 @@ jobs:
           key: ${{ secrets.ECS_SSH_KEY }}
           port: ${{ secrets.ECS_SSH_PORT }}
           script: |
-            cd /root/HNUSTAIassistant/HNUSTAIassistant
-            git pull origin master
-            npm install
-            pm2 restart qdbh2026
+            set -euo pipefail
+
+            APP_DIR=/root/HNUSTAIassistant
+            test -d "$APP_DIR/.git"
+            cd "$APP_DIR"
+
+            git fetch origin master
+            git pull --ff-only origin master
+            npm install --production
+            pm2 restart qdbh2026 --update-env
+
+            test "$(git rev-parse HEAD)" = "$(git rev-parse origin/master)"
+            curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3000/ > /dev/null
+            echo "Deployed commit: $(git rev-parse --short HEAD)"
