@@ -35,7 +35,13 @@ const guideCategoriesContainer = document.getElementById('guideCategories');
 const addGuideCategoryButton = document.getElementById('addGuideCategory');
 const guideUploadInput = document.getElementById('guideUploadInput');
 const guideUploadButton = document.getElementById('guideUploadButton');
+const guideUploadDropzone = document.getElementById('guideUploadDropzone');
 const uploadResult = document.getElementById('uploadResult');
+const previewModal = document.getElementById('previewModal');
+const previewBackdrop = document.getElementById('previewBackdrop');
+const closePreviewButton = document.getElementById('closePreview');
+const previewTitle = document.getElementById('previewTitle');
+const previewContent = document.getElementById('previewContent');
 
 const baseUrl = window.location.origin;
 let currentConfig = {};
@@ -216,7 +222,7 @@ function createAttachmentRow(item = {}) {
   return row;
 }
 
-function createGuidePostCard(item = {}) {
+function createGuidePostCard(item = {}, getCategoryTitle = () => '') {
   const card = document.createElement('div');
   card.className = 'sub-item-card';
 
@@ -228,7 +234,12 @@ function createGuidePostCard(item = {}) {
   removeButton.className = 'remove-button';
   removeButton.textContent = '删除帖子';
   removeButton.addEventListener('click', () => card.remove());
-  header.appendChild(removeButton);
+  const previewButton = document.createElement('button');
+  previewButton.type = 'button';
+  previewButton.className = 'preview-button';
+  previewButton.textContent = '预览帖子';
+  previewButton.addEventListener('click', () => showPostPreview(card.getData(), getCategoryTitle()));
+  header.append(previewButton, removeButton);
   card.appendChild(header);
 
   const titleField = createInputField('帖子标题', item.title || '');
@@ -262,7 +273,8 @@ function createGuidePostCard(item = {}) {
   addAttachmentButton.addEventListener('click', () => {
     attachmentContainer.appendChild(createAttachmentRow());
   });
-  attachmentBlock.append(attachmentLabel, attachmentContainer, addAttachmentButton);
+  const postUploadArea = createPostUploadArea(attachmentContainer);
+  attachmentBlock.append(attachmentLabel, attachmentContainer, postUploadArea, addAttachmentButton);
 
   card.append(titleField.wrapper, summaryField.wrapper, coverField.wrapper, htmlField, attachmentBlock);
 
@@ -291,13 +303,13 @@ function createGuideCategoryCard(item = {}) {
   postsWrap.appendChild(postsLabel);
 
   const postsContainer = document.createElement('div');
-  (item.posts || []).forEach((post) => postsContainer.appendChild(createGuidePostCard(post)));
+  (item.posts || []).forEach((post) => postsContainer.appendChild(createGuidePostCard(post, () => titleField.input.value.trim())));
 
   const addPostButton = document.createElement('button');
   addPostButton.type = 'button';
   addPostButton.className = 'secondary';
   addPostButton.textContent = '新增帖子';
-  addPostButton.addEventListener('click', () => postsContainer.appendChild(createGuidePostCard()));
+  addPostButton.addEventListener('click', () => postsContainer.appendChild(createGuidePostCard({}, () => titleField.input.value.trim())));
 
   postsWrap.append(postsContainer, addPostButton);
 
@@ -428,6 +440,230 @@ async function saveConfig() {
   }
 }
 
+function bindFileDropzone(dropzone, input, onFiles) {
+  if (!dropzone || !input) return;
+
+  ['dragenter', 'dragover'].forEach((eventName) => {
+    dropzone.addEventListener(eventName, (event) => {
+      event.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach((eventName) => {
+    dropzone.addEventListener(eventName, (event) => {
+      event.preventDefault();
+      dropzone.classList.remove('dragover');
+    });
+  });
+
+  dropzone.addEventListener('drop', (event) => {
+    onFiles(event.dataTransfer.files);
+  });
+
+  dropzone.addEventListener('click', () => input.click());
+  dropzone.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      input.click();
+    }
+  });
+  input.addEventListener('change', () => {
+    onFiles(input.files);
+    input.value = '';
+  });
+}
+
+async function uploadFiles(fileList, onUploaded, resultElement = uploadResult) {
+  const files = Array.from(fileList || []);
+  if (files.length === 0) {
+    resultElement.textContent = '请先选择或拖入文件。';
+    return;
+  }
+
+  let successCount = 0;
+  const failures = [];
+  const uploadedUrls = [];
+
+  for (let index = 0; index < files.length; index += 1) {
+    const file = files[index];
+    const formData = new FormData();
+    formData.append('file', file);
+    resultElement.textContent = `正在上传 ${file.name}（${index + 1}/${files.length}）...`;
+
+    try {
+      const resp = await fetch(`${baseUrl}/api/upload`, {
+        method: 'POST',
+        body: formData
+      });
+      const result = await resp.json();
+
+      if (!resp.ok || !result.ok || !result.file) {
+        throw new Error(result.error || '上传失败');
+      }
+
+      successCount += 1;
+      uploadedUrls.push(`${file.name}: ${result.file.url}`);
+      if (onUploaded) {
+        onUploaded(result.file);
+      }
+    } catch (error) {
+      failures.push(`${file.name}：${error.message}`);
+      console.error(error);
+    }
+  }
+
+  const successText = uploadedUrls.length > 0 ? ` ${uploadedUrls.join('；')}` : '';
+  resultElement.textContent = failures.length > 0
+    ? `成功上传 ${successCount} 个，失败 ${failures.length} 个：${failures.join('；')}${successText}`
+    : `成功上传 ${successCount} 个文件。${successText}`;
+}
+
+function createPostUploadArea(attachmentContainer) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'post-upload-area';
+
+  const dropzone = document.createElement('div');
+  dropzone.className = 'upload-dropzone';
+  dropzone.tabIndex = 0;
+  dropzone.setAttribute('role', 'button');
+
+  const title = document.createElement('strong');
+  title.textContent = '拖拽文件到此帖子';
+  const hint = document.createElement('span');
+  hint.className = 'post-upload-hint';
+  hint.textContent = '上传成功后会自动加入附件列表';
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.multiple = true;
+  input.style.display = 'none';
+  dropzone.append(title, hint, input);
+
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'secondary';
+  button.textContent = '选择附件上传';
+  button.addEventListener('click', () => input.click());
+
+  const handleFiles = (files) => uploadFiles(files, (file) => {
+    attachmentContainer.appendChild(createAttachmentRow({
+      name: file.originalName,
+      url: file.url,
+      mimeType: file.mimeType
+    }));
+  }, hint);
+
+  bindFileDropzone(dropzone, input, handleFiles);
+  wrapper.append(dropzone, button);
+  return wrapper;
+}
+
+function normalizePreviewAssetUrl(value) {
+  if (!value) return '';
+  let url = String(value).trim().replace(/\\/g, '/');
+  if (url.startsWith('public/')) url = url.slice(7);
+  if (url.startsWith('./')) url = url.slice(2);
+  if (url && !url.startsWith('/') && !url.match(/^[a-zA-Z][a-zA-Z0-9+.-]*:/)) {
+    url = `/${url}`;
+  }
+  return url;
+}
+
+function createPreviewAttachment(item) {
+  const box = document.createElement('div');
+  box.className = 'preview-attachment';
+
+  const name = document.createElement('strong');
+  name.textContent = item.name || '附件';
+  box.appendChild(name);
+
+  const url = normalizePreviewAssetUrl(item.url || '');
+  const mime = String(item.mimeType || '').toLowerCase();
+  if (!url) return box;
+
+  if (mime.startsWith('image/')) {
+    const image = document.createElement('img');
+    image.src = url;
+    image.alt = item.name || '图片附件';
+    box.appendChild(image);
+    return box;
+  }
+
+  if (mime.includes('pdf') || url.toLowerCase().endsWith('.pdf')) {
+    const frame = document.createElement('iframe');
+    frame.src = `${url}#toolbar=0&navpanes=0`;
+    frame.title = item.name || 'PDF 附件';
+    box.appendChild(frame);
+  }
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.target = '_blank';
+  link.rel = 'noopener';
+  link.textContent = mime.includes('pdf') ? '新窗口打开 PDF' : '打开附件';
+  box.appendChild(link);
+  return box;
+}
+
+function showPostPreview(post, categoryTitle) {
+  previewTitle.textContent = post.title ? `预览：${post.title}` : '帖子预览';
+  previewContent.innerHTML = '';
+
+  const article = document.createElement('article');
+  article.className = 'preview-post';
+
+  const header = document.createElement('header');
+  header.className = 'preview-post-header';
+  const tag = document.createElement('p');
+  tag.className = 'preview-post-tag';
+  tag.textContent = `${categoryTitle || '未命名分类'} · 帖子预览`;
+  const title = document.createElement('h2');
+  title.className = 'preview-post-title';
+  title.textContent = post.title || '未命名帖子';
+  const summary = document.createElement('p');
+  summary.className = 'preview-post-summary';
+  summary.textContent = post.summary || '暂无摘要';
+  header.append(tag, title, summary);
+
+  const body = document.createElement('div');
+  body.className = 'preview-post-body';
+
+  const coverUrl = normalizePreviewAssetUrl(post.coverImageUrl || '');
+  if (coverUrl) {
+    const cover = document.createElement('img');
+    cover.className = 'preview-post-cover';
+    cover.src = coverUrl;
+    cover.alt = '帖子封面';
+    body.appendChild(cover);
+  }
+
+  const content = document.createElement('div');
+  content.className = 'preview-post-content';
+  content.innerHTML = post.contentHtml || '<p>暂无正文内容。</p>';
+  body.appendChild(content);
+
+  const attachments = Array.isArray(post.attachments) ? post.attachments.filter((item) => item.url) : [];
+  if (attachments.length > 0) {
+    const section = document.createElement('section');
+    section.className = 'preview-attachments';
+    const heading = document.createElement('h4');
+    heading.textContent = '附件资料';
+    const list = document.createElement('div');
+    attachments.forEach((item) => list.appendChild(createPreviewAttachment(item)));
+    section.append(heading, list);
+    body.appendChild(section);
+  }
+
+  article.append(header, body);
+  previewContent.appendChild(article);
+  previewModal.classList.remove('hidden');
+}
+
+function closePreview() {
+  previewModal.classList.add('hidden');
+  previewContent.innerHTML = '';
+}
+
 async function uploadFile() {
   if (!guideUploadInput.files || guideUploadInput.files.length === 0) {
     uploadResult.textContent = '请先选择文件。';
@@ -473,7 +709,8 @@ addStickyButton.addEventListener('click', () => stickyContactsContainer.appendCh
 addFeatureButton.addEventListener('click', () => featureButtonsContainer.appendChild(createFeatureCard()));
 addFaqButton.addEventListener('click', () => faqItemsContainer.appendChild(createFaqCard()));
 addGuideCategoryButton.addEventListener('click', () => guideCategoriesContainer.appendChild(createGuideCategoryCard()));
-guideUploadButton.addEventListener('click', uploadFile);
+guideUploadButton.addEventListener('click', () => guideUploadInput.click());
+bindFileDropzone(guideUploadDropzone, guideUploadInput, (files) => uploadFiles(files));
 
 sectionButtons.forEach((button) => {
   button.addEventListener('click', () => selectSection(button.dataset.section));
@@ -481,4 +718,11 @@ sectionButtons.forEach((button) => {
 
 closeModalButton.addEventListener('click', () => saveModal.classList.add('hidden'));
 dialogBackdrop.addEventListener('click', () => saveModal.classList.add('hidden'));
+closePreviewButton.addEventListener('click', closePreview);
+previewBackdrop.addEventListener('click', closePreview);
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && !previewModal.classList.contains('hidden')) {
+    closePreview();
+  }
+});
 window.addEventListener('load', loadConfig);

@@ -109,7 +109,11 @@
                 <strong>附件上传</strong>
                 <p>先上传图片或文档，再插入到帖子封面或附件列表中。</p>
                 <div class="upload-row">
-                  <input id="guideUploadInput" type="file" />
+                  <div class="upload-dropzone" id="guideUploadDropzone" tabindex="0" role="button">
+                    <strong>拖拽文件到这里</strong>
+                    <span>或点击选择本地文件（支持多选）</span>
+                    <input id="guideUploadInput" type="file" multiple />
+                  </div>
                   <button type="button" class="secondary" id="guideUploadButton">上传文件</button>
                 </div>
                 <div class="upload-result" id="uploadResult"></div>
@@ -149,6 +153,20 @@
         <h3>保存成功</h3>
         <p id="saveModalMessage">配置已更新并保存。</p>
         <button type="button" id="closeModal">知道了</button>
+      </div>
+    </div>
+
+    <div class="preview-modal hidden" id="previewModal">
+      <div class="dialog-backdrop" id="previewBackdrop"></div>
+      <div class="preview-card" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+        <div class="preview-card-header">
+          <div>
+            <span class="preview-eyebrow">发布前预览</span>
+            <h3 id="previewTitle">帖子预览</h3>
+          </div>
+          <button type="button" class="preview-close" id="closePreview" aria-label="关闭预览">×</button>
+        </div>
+        <div class="preview-page" id="previewContent"></div>
       </div>
     </div>
 

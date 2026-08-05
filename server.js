@@ -46,7 +46,12 @@ const storage = multer.diskStorage({
     cb(null, `${Date.now()}-${safeBase || 'upload'}${ext}`);
   }
 });
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 25 * 1024 * 1024
+  }
+});
 
 function parseCookies(req) {
   const cookieHeader = req.headers.cookie || '';
@@ -189,6 +194,16 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
       mimeType: req.file.mimetype
     }
   });
+});
+
+app.use((error, _req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: '文件不能超过 25MB。' });
+    }
+    return res.status(400).json({ error: error.message });
+  }
+  return next(error);
 });
 
 async function startServer(port) {
