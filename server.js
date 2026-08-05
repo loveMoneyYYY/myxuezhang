@@ -6,7 +6,19 @@ const multer = require('multer');
 const { findAnswer } = require('./lib/qa');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+function resolvePort() {
+  const explicitPort = process.env.PORT || process.env.APP_PORT;
+  if (explicitPort) {
+    const parsedPort = Number(explicitPort);
+    if (Number.isInteger(parsedPort) && parsedPort > 0 && parsedPort <= 65535) {
+      return parsedPort;
+    }
+  }
+
+  return 80;
+}
+
+const PORT = resolvePort();
 const configPath = path.join(__dirname, 'config.json');
 const uploadDir = path.join(__dirname, 'public', 'uploads');
 const SESSION_COOKIE = 'admin_session';
@@ -190,6 +202,6 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
