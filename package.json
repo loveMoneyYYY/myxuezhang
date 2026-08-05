@@ -4,7 +4,9 @@
   "description": "湖南科技大学新生答疑助手前后端应用",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "db:migrate": "node scripts/db-migrate.js",
+    "db:import": "node scripts/import-config.js"
   },
   "keywords": [
     "express",
@@ -15,7 +17,9 @@
   "author": "AI Assistant",
   "license": "MIT",
   "dependencies": {
+    "dotenv": "^17.4.2",
     "express": "^4.18.4",
-    "multer": "^2.2.0"
+    "multer": "^2.2.0",
+    "pg": "^8.13.1"
   }
 }

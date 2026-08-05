@@ -4,6 +4,13 @@ const path = require('path');
 const crypto = require('crypto');
 const multer = require('multer');
 const { findAnswer } = require('./lib/qa');
+const {
+  closeStorage,
+  getAdminPassword,
+  initializeStorage,
+  loadConfig,
+  saveConfig
+} = require('./storage');
 
 const app = express();
 function resolvePort() {
@@ -19,8 +26,10 @@ function resolvePort() {
 }
 
 const PORT = resolvePort();
-const configPath = path.join(__dirname, 'config.json');
-const uploadDir = path.join(__dirname, 'public', 'uploads');
+const configuredUploadDir = process.env.UPLOAD_DIR;
+const uploadDir = configuredUploadDir
+  ? (path.isAbsolute(configuredUploadDir) ? configuredUploadDir : path.join(__dirname, configuredUploadDir))
+  : path.join(__dirname, 'public', 'uploads');
 const SESSION_COOKIE = 'admin_session';
 const sessions = new Set();
 
@@ -38,20 +47,6 @@ const storage = multer.diskStorage({
   }
 });
 const upload = multer({ storage });
-
-async function loadConfig() {
-  try {
-    const text = await fs.readFile(configPath, 'utf8');
-    return JSON.parse(text);
-  } catch (error) {
-    console.error('Load config failed:', error);
-    return {};
-  }
-}
-
-async function saveConfig(config) {
-  await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf8');
-}
 
 function parseCookies(req) {
   const cookieHeader = req.headers.cookie || '';
@@ -130,8 +125,7 @@ app.get('/admin/login', async (req, res) => {
 
 app.post('/admin/login', async (req, res) => {
   const { password } = req.body;
-  const config = await loadConfig();
-  const expectedPassword = config.adminPassword || process.env.ADMIN_PASSWORD || 'admin123';
+  const expectedPassword = await getAdminPassword();
   if (password === expectedPassword) {
     const token = createSessionToken();
     sessions.add(token);
@@ -156,18 +150,13 @@ app.get('/api/config', async (req, res) => {
 });
 
 app.post('/api/config', async (req, res) => {
-  const config = req.body;
+  const config = { ...req.body };
   if (!config || typeof config !== 'object') {
     return res.status(400).json({ error: '无效配置数据。' });
   }
 
   try {
-    const currentConfig = await loadConfig();
-    if (currentConfig.adminPassword) {
-      config.adminPassword = currentConfig.adminPassword;
-    } else if (process.env.ADMIN_PASSWORD) {
-      config.adminPassword = process.env.ADMIN_PASSWORD;
-    }
+    delete config.adminPassword;
     await saveConfig(config);
     res.json({ ok: true });
   } catch (error) {
@@ -202,7 +191,14 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
   });
 });
 
-function startServer(port) {
+async function startServer(port) {
+  try {
+    await initializeStorage();
+  } catch (error) {
+    console.error('Storage initialization failed:', error);
+    process.exit(1);
+  }
+
   const server = app.listen(port, '0.0.0.0', () => {
     console.log(`Server running on http://0.0.0.0:${port}`);
   });
@@ -217,6 +213,14 @@ function startServer(port) {
     console.error(`Failed to start server on port ${port}:`, error);
     process.exit(1);
   });
+
+  const shutdown = async () => {
+    await closeStorage();
+    server.close(() => process.exit(0));
+  };
+
+  process.once('SIGINT', shutdown);
+  process.once('SIGTERM', shutdown);
 }
 
 startServer(PORT);

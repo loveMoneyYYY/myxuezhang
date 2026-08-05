@@ -224,13 +224,9 @@ function renderPosts() {
       attachments.forEach((item) => attachmentList.appendChild(createAttachment(item)));
     }
 
-    const openByDefault = index === 0;
-    if (!openByDefault) {
-      body.classList.add('hidden');
-      toggle.textContent = '展开';
-    } else {
-      toggle.textContent = '收起';
-    }
+    // Start collapsed to avoid showing long content by default.
+    body.classList.add('hidden');
+    toggle.textContent = '展开';
 
     header.addEventListener('click', () => {
       const hidden = body.classList.toggle('hidden');
@@ -239,6 +235,35 @@ function renderPosts() {
 
     postPanel.appendChild(article);
   });
+}
+
+function lockPageZoom() {
+  // Block browser zoom shortcuts (Ctrl + wheel / +/- / 0).
+  document.addEventListener('wheel', (event) => {
+    if (event.ctrlKey) {
+      event.preventDefault();
+    }
+  }, { passive: false });
+
+  document.addEventListener('keydown', (event) => {
+    if (!event.ctrlKey) return;
+    if (event.key === '+' || event.key === '-' || event.key === '=' || event.key === '0') {
+      event.preventDefault();
+    }
+  });
+
+  // Block pinch-zoom on touch devices.
+  document.addEventListener('touchstart', (event) => {
+    if (event.touches.length > 1) {
+      event.preventDefault();
+    }
+  }, { passive: false });
+
+  document.addEventListener('touchmove', (event) => {
+    if (event.touches.length > 1) {
+      event.preventDefault();
+    }
+  }, { passive: false });
 }
 
 async function initPage() {
@@ -257,4 +282,5 @@ async function initPage() {
   renderPosts();
 }
 
+lockPageZoom();
 initPage();
