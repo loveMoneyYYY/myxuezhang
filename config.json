@@ -505,5 +505,58 @@
   "schoolIntro": "湖南科技大学 · 26级新生答疑平台",
   "siteLogoUrl": "/pic/学校logo.png",
   "heroImageUrl": "/pic/学校校门.jpg",
-  "qrImageUrl": "/pic/微信名片.jpg"
+  "qrImageUrl": "/pic/微信名片.jpg",
+  "guidePage": {
+    "entryTitle": "报到、宿舍、生活分类帖文",
+    "entryDescription": "支持分类、折叠与附件预览，点击进入查看完整内容。",
+    "pageTitle": "新生报到导览",
+    "pageSubtitle": "分类帖文 · 可折叠查看",
+    "heroTitle": "报到、宿舍、生活一站式导览",
+    "heroSummary": "按分类查看帖子内容，支持图片与 PDF 附件预览。",
+    "heroImageUrl": "/pic/学校校门.jpg",
+    "categories": [
+      {
+        "id": "report",
+        "title": "报到指南",
+        "subtitle": "手续与材料",
+        "posts": [
+          {
+            "title": "新生报到完整流程",
+            "summary": "按时间顺序整理，先做什么、后做什么，一看就清楚。",
+            "coverImageUrl": "/pic/学校校门.jpg",
+            "contentHtml": "<h4>报到当日流程</h4><ol><li>到迎新点核验录取信息。</li><li>办理住宿分配并领取钥匙。</li><li>提交档案与团组织关系材料。</li><li>完成校园卡激活和学费确认。</li></ol>",
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "id": "dorm",
+        "title": "宿舍介绍",
+        "subtitle": "设施与规范",
+        "posts": [
+          {
+            "title": "宿舍配置与入住须知",
+            "summary": "从床位、用电、门禁到热水时间，入住前先掌握。",
+            "coverImageUrl": "",
+            "contentHtml": "<h4>重点提示</h4><ul><li>确认床位信息和宿舍楼栋。</li><li>熟悉宿舍作息与门禁时间。</li><li>准备必要生活用品，避免重复购买。</li></ul>",
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "id": "life",
+        "title": "校园生活",
+        "subtitle": "饮食交通社团",
+        "posts": [
+          {
+            "title": "一周快速融入校园",
+            "summary": "食堂、快递、出行与社团活动的高频信息集合。",
+            "coverImageUrl": "",
+            "contentHtml": "<h4>建议安排</h4><p>前 3 天优先熟悉食堂、图书馆、快递点与校医院位置。</p><blockquote>先熟悉路线，再规划课程和社团，效率更高。</blockquote>",
+            "attachments": []
+          }
+        ]
+      }
+    ]
+  }
 }

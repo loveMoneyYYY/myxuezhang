@@ -2,13 +2,30 @@ const express = require('express');
 const fs = require('fs').promises;
 const path = require('path');
 const crypto = require('crypto');
+const multer = require('multer');
 const { findAnswer } = require('./lib/qa');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const configPath = path.join(__dirname, 'config.json');
+const uploadDir = path.join(__dirname, 'public', 'uploads');
 const SESSION_COOKIE = 'admin_session';
 const sessions = new Set();
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname || '').slice(0, 16);
+    const safeBase = path
+      .basename(file.originalname || 'file', ext)
+      .replace(/[^a-zA-Z0-9_-]/g, '_')
+      .slice(0, 60);
+    cb(null, `${Date.now()}-${safeBase || 'upload'}${ext}`);
+  }
+});
+const upload = multer({ storage });
 
 async function loadConfig() {
   try {
@@ -58,15 +75,27 @@ function getPublicConfig(config) {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+fs.mkdir(uploadDir, { recursive: true }).catch((error) => {
+  console.error('Create upload directory failed:', error);
+});
+
 app.use((req, res, next) => {
   const protectedPaths = ['/admin', '/admin.html', '/admin.js', '/admin.css'];
-  if (protectedPaths.includes(req.path) || (req.path === '/api/config' && req.method === 'POST')) {
+  const needAuth =
+    protectedPaths.includes(req.path) ||
+    (req.path === '/api/config' && req.method === 'POST') ||
+    (req.path === '/api/upload' && req.method === 'POST');
+  if (needAuth) {
     return authMiddleware(req, res, next);
   }
   next();
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/guide', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'guide.html'));
+});
 
 app.get('/admin', (req, res) => {
   if (!isAuthenticated(req)) {
@@ -144,6 +173,21 @@ app.post('/api/question', async (req, res) => {
   const config = await loadConfig();
   const answer = findAnswer(config, question);
   res.json({ answer });
+});
+
+app.post('/api/upload', upload.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: '未接收到上传文件。' });
+  }
+  return res.json({
+    ok: true,
+    file: {
+      url: `/uploads/${req.file.filename}`,
+      originalName: req.file.originalname,
+      size: req.file.size,
+      mimeType: req.file.mimetype
+    }
+  });
 });
 
 app.listen(PORT, () => {

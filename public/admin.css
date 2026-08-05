@@ -87,6 +87,12 @@ body {
   font-size: 1.2rem;
 }
 
+.section-tip {
+  margin: 0 0 14px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
 .admin-header {
   display: flex;
   justify-content: space-between;
@@ -215,6 +221,79 @@ body {
   margin-bottom: 16px;
 }
 
+.sub-item-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px dashed #c6d4f8;
+  padding: 14px;
+  margin-top: 12px;
+}
+
+.guide-toolbar-block {
+  margin: 14px 0 18px;
+  border: 1px solid #d9e1f3;
+  border-radius: 16px;
+  background: #f7f9ff;
+  padding: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.guide-toolbar-block p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.upload-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.upload-result {
+  min-height: 20px;
+  color: #1d4ed8;
+  word-break: break-all;
+}
+
+.editor-toolbar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.editor-toolbar button {
+  border: 1px solid #d0d9f4;
+  border-radius: 10px;
+  background: #fff;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+
+.rich-editor {
+  border: 1px solid #d1d5db;
+  border-radius: 14px;
+  background: #fff;
+  min-height: 150px;
+  padding: 12px;
+  line-height: 1.75;
+}
+
+.attachment-row {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #dbe4fb;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 10px;
+  background: #fff;
+}
+
+.attachment-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .item-card-title {
   display: flex;
   justify-content: space-between;
@@ -319,5 +398,10 @@ body {
 
   .sidebar {
     padding: 16px;
+  }
+
+  .upload-row {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

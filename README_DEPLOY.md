@@ -72,3 +72,49 @@ curl -I http://127.0.0.1:3000
 sudo ufw status
 sudo ufw allow 3000/tcp
 ```
+
+## 4. 使用 Nginx 统一 80 和 3000
+
+如果你希望这两个地址看到同一个页面：
+
+- `http://8.160.191.82`
+- `http://8.160.191.82:3000`
+
+请在服务器上配置 Nginx 反向代理到 Node 服务（3000）。
+
+### 4.1 安装 Nginx（Ubuntu）
+
+```bash
+sudo apt-get update
+sudo apt-get install -y nginx
+```
+
+### 4.2 上传并启用站点配置
+
+项目已提供配置文件：`deploy/nginx-qdbh2026.conf`
+
+在服务器执行：
+
+```bash
+sudo cp /root/HNUSTAIassistant/HNUSTAIassistant/deploy/nginx-qdbh2026.conf /etc/nginx/sites-available/qdbh2026.conf
+sudo ln -sf /etc/nginx/sites-available/qdbh2026.conf /etc/nginx/sites-enabled/qdbh2026.conf
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+### 4.3 验证
+
+```bash
+curl -I http://127.0.0.1:3000
+curl -I http://127.0.0.1
+```
+
+两个请求都应返回 `HTTP/1.1 200 OK`（或 304）。
+
+### 4.4 安全组
+
+确保安全组已放行：
+
+- 80/tcp
+- 3000/tcp（可选，保留用于调试；如果不想暴露可关闭）

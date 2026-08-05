@@ -22,6 +22,7 @@
       <div class="admin-layout">
         <aside class="sidebar">
           <button type="button" data-section="basic" class="active">基础信息</button>
+          <button type="button" data-section="guide">二级页面配置</button>
           <button type="button" data-section="sticky">悬浮联系卡</button>
           <button type="button" data-section="feature">功能按钮</button>
           <button type="button" data-section="faq">问答配置</button>
@@ -70,6 +71,52 @@
                 <label>默认回答</label>
                 <textarea id="defaultAnswer"></textarea>
               </div>
+            </section>
+
+            <section class="section-panel hidden" data-section="guide">
+              <h2>二级页面配置</h2>
+              <p class="section-tip">用于维护“报到 / 宿舍 / 生活”等分类帖文，支持富文本与附件上传（图片、PDF、文档）。</p>
+              <div class="field-row">
+                <label>入口标题（首页展示）</label>
+                <input id="guideEntryTitle" placeholder="例如：报到、宿舍、生活分类帖文" />
+              </div>
+              <div class="field-row">
+                <label>入口说明（首页展示）</label>
+                <input id="guideEntryDescription" placeholder="例如：支持分类、折叠与附件预览" />
+              </div>
+              <div class="field-row">
+                <label>导览页主标题</label>
+                <input id="guidePageTitle" placeholder="例如：新生报到导览" />
+              </div>
+              <div class="field-row">
+                <label>导览页副标题</label>
+                <input id="guidePageSubtitle" placeholder="例如：分类帖文 · 可折叠查看" />
+              </div>
+              <div class="field-row">
+                <label>导览页 Hero 标题</label>
+                <input id="guideHeroTitle" placeholder="例如：报到、宿舍、生活一站式导览" />
+              </div>
+              <div class="field-row">
+                <label>导览页 Hero 说明</label>
+                <textarea id="guideHeroSummary" placeholder="导览页顶部文案"></textarea>
+              </div>
+              <div class="field-row">
+                <label>导览页 Hero 背景图 URL</label>
+                <input id="guideHeroImageUrl" placeholder="例如 /pic/学校校门.jpg" />
+              </div>
+
+              <div class="guide-toolbar-block">
+                <strong>附件上传</strong>
+                <p>先上传图片或文档，再插入到帖子封面或附件列表中。</p>
+                <div class="upload-row">
+                  <input id="guideUploadInput" type="file" />
+                  <button type="button" class="secondary" id="guideUploadButton">上传文件</button>
+                </div>
+                <div class="upload-result" id="uploadResult"></div>
+              </div>
+
+              <div id="guideCategories"></div>
+              <button type="button" class="secondary" id="addGuideCategory">新增分类</button>
             </section>
 
             <section class="section-panel hidden" data-section="sticky">

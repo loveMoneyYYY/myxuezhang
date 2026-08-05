@@ -12,11 +12,15 @@ const siteTitle = document.getElementById('siteTitle');
 const heroTitle = document.getElementById('heroTitle');
 const heroSubtitle = document.getElementById('heroSubtitle');
 const heroDescription = document.getElementById('heroDescription');
+const heroBadge = document.getElementById('heroBadge');
 const schoolIntro = document.getElementById('schoolIntro');
 const disclaimer = document.getElementById('disclaimer');
 const siteLogo = document.getElementById('siteLogo');
 const heroImage = document.getElementById('heroImage');
 const qrImage = document.getElementById('qrImage');
+const guideEntryTitle = document.getElementById('guideEntryTitle');
+const guideEntryDesc = document.getElementById('guideEntryDesc');
+const guideEntryButton = document.getElementById('guideEntryButton');
 const imageModal = document.getElementById('imageModal');
 const modalBackdrop = document.getElementById('modalBackdrop');
 const modalClose = document.getElementById('modalClose');
@@ -66,7 +70,11 @@ const defaultConfig = {
     { icon: '⚠️', title: '防骗提醒', description: '防骗提醒' },
     { icon: '🏪', title: '周边生活指南', description: '周边生活指南' },
     { icon: '📦', title: '菜鸟驿站在哪？', description: '菜鸟驿站在哪？' }
-  ]
+  ],
+  guidePage: {
+    entryTitle: '报到、宿舍、生活分类帖文',
+    entryDescription: '支持分类、折叠与附件预览，点击进入查看完整内容。'
+  }
 };
 
 let clientConfig = null;
@@ -184,6 +192,17 @@ function renderContent() {
   const qrUrl = normalizeAssetUrl(clientConfig.qrImageUrl) || normalizeAssetUrl(defaultConfig.qrImageUrl);
   qrImage.style.backgroundImage = qrUrl ? `url('${qrUrl}')` : 'none';
 
+  const guidePageConfig = clientConfig.guidePage || defaultConfig.guidePage || {};
+  if (guideEntryTitle) {
+    guideEntryTitle.textContent = guidePageConfig.entryTitle || '报到、宿舍、生活分类帖文';
+  }
+  if (guideEntryDesc) {
+    guideEntryDesc.textContent = guidePageConfig.entryDescription || '支持分类、折叠与附件预览，点击进入查看完整内容。';
+  }
+  if (guideEntryButton) {
+    guideEntryButton.href = '/guide';
+  }
+
   const entryModalContent = resolveEntryModalContent(clientConfig);
   if (entryModalTitle) {
     entryModalTitle.textContent = entryModalContent.title;
@@ -297,6 +316,18 @@ if (entryModalBackdrop) {
 }
 if (entryModalClose) {
   entryModalClose.addEventListener('click', closeEntryModal);
+}
+
+if (heroBadge) {
+  heroBadge.addEventListener('click', () => {
+    window.location.href = '/guide';
+  });
+  heroBadge.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      window.location.href = '/guide';
+    }
+  });
 }
 
 loadConfig().catch((error) => {

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>新生报到导览 · 白羊学长</title>
+    <link rel="icon" href="/pic/学校logo.png" type="image/png" />
+    <link rel="stylesheet" href="guide.css" />
+  </head>
+  <body>
+    <div class="guide-shell">
+      <header class="guide-topbar">
+        <div class="guide-topbar-inner">
+          <a class="back-link" href="/">返回首页</a>
+          <div class="topbar-copy">
+            <strong id="pageTitle">新生报到导览</strong>
+            <small id="pageSubtitle">分类帖文 · 可折叠查看</small>
+          </div>
+        </div>
+      </header>
+
+      <main class="guide-main">
+        <section class="guide-hero" id="guideHero">
+          <div class="hero-mask"></div>
+          <div class="hero-text">
+            <p class="hero-eyebrow">湖南科技大学 26 级新生</p>
+            <h1 id="heroTitle">报到、宿舍、生活一站式导览</h1>
+            <p id="heroSummary">按分类查看帖子内容，支持图片与 PDF 附件预览。</p>
+          </div>
+        </section>
+
+        <section class="guide-layout">
+          <aside class="category-panel" id="categoryPanel"></aside>
+          <section class="post-panel" id="postPanel"></section>
+        </section>
+      </main>
+    </div>
+
+    <template id="postTemplate">
+      <article class="guide-post">
+        <button class="post-header" type="button">
+          <div class="post-header-copy">
+            <p class="post-tag"></p>
+            <h3 class="post-title"></h3>
+            <p class="post-summary"></p>
+          </div>
+          <span class="post-toggle" aria-hidden="true">展开</span>
+        </button>
+        <div class="post-body hidden">
+          <div class="post-cover-wrap hidden">
+            <img class="post-cover" alt="帖子封面" />
+          </div>
+          <div class="post-content"></div>
+          <div class="attachment-section hidden">
+            <h4>附件资料</h4>
+            <div class="attachment-list"></div>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <script src="guide.js"></script>
+  </body>
+</html>

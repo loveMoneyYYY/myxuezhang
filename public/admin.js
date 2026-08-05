@@ -24,9 +24,32 @@ const dialogBackdrop = document.getElementById('dialogBackdrop');
 const closeModalButton = document.getElementById('closeModal');
 const saveModalMessage = document.getElementById('saveModalMessage');
 
-let currentConfig = {};
+const guideEntryTitleInput = document.getElementById('guideEntryTitle');
+const guideEntryDescriptionInput = document.getElementById('guideEntryDescription');
+const guidePageTitleInput = document.getElementById('guidePageTitle');
+const guidePageSubtitleInput = document.getElementById('guidePageSubtitle');
+const guideHeroTitleInput = document.getElementById('guideHeroTitle');
+const guideHeroSummaryInput = document.getElementById('guideHeroSummary');
+const guideHeroImageUrlInput = document.getElementById('guideHeroImageUrl');
+const guideCategoriesContainer = document.getElementById('guideCategories');
+const addGuideCategoryButton = document.getElementById('addGuideCategory');
+const guideUploadInput = document.getElementById('guideUploadInput');
+const guideUploadButton = document.getElementById('guideUploadButton');
+const uploadResult = document.getElementById('uploadResult');
 
 const baseUrl = window.location.origin;
+let currentConfig = {};
+
+const defaultGuideConfig = {
+  entryTitle: '报到、宿舍、生活分类帖文',
+  entryDescription: '支持分类、折叠与附件预览，点击进入查看完整内容。',
+  pageTitle: '新生报到导览',
+  pageSubtitle: '分类帖文 · 可折叠查看',
+  heroTitle: '报到、宿舍、生活一站式导览',
+  heroSummary: '按分类查看帖子内容，支持图片与 PDF 附件预览。',
+  heroImageUrl: '/pic/学校校门.jpg',
+  categories: []
+};
 
 function createInputField(labelText, value = '', placeholder = '') {
   const wrapper = document.createElement('div');
@@ -66,6 +89,54 @@ function createCard(title) {
   titleEl.appendChild(removeButton);
   card.appendChild(titleEl);
   return card;
+}
+
+function createToolbar(editor) {
+  const toolbar = document.createElement('div');
+  toolbar.className = 'editor-toolbar';
+
+  const actions = [
+    { label: 'H4', command: 'formatBlock', value: 'h4' },
+    { label: 'H5', command: 'formatBlock', value: 'h5' },
+    { label: '段落', command: 'formatBlock', value: 'p' },
+    { label: '加粗', command: 'bold' },
+    { label: '斜体', command: 'italic' },
+    { label: '无序列表', command: 'insertUnorderedList' },
+    { label: '有序列表', command: 'insertOrderedList' },
+    { label: '引用', command: 'formatBlock', value: 'blockquote' }
+  ];
+
+  actions.forEach((item) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = item.label;
+    button.addEventListener('click', () => {
+      editor.focus();
+      if (item.value) {
+        document.execCommand(item.command, false, item.value);
+      } else {
+        document.execCommand(item.command, false, null);
+      }
+    });
+    toolbar.appendChild(button);
+  });
+
+  return toolbar;
+}
+
+function clearContainer(container) {
+  while (container.firstChild) {
+    container.removeChild(container.firstChild);
+  }
+}
+
+function selectSection(section) {
+  sectionButtons.forEach((button) => {
+    button.classList.toggle('active', button.dataset.section === section);
+  });
+  sectionPanels.forEach((panel) => {
+    panel.classList.toggle('hidden', panel.dataset.section !== section);
+  });
 }
 
 function createStickyCard(item = {}) {
@@ -119,19 +190,161 @@ function createFaqCard(item = {}) {
   return card;
 }
 
-function clearContainer(container) {
-  while (container.firstChild) {
-    container.removeChild(container.firstChild);
-  }
+function createAttachmentRow(item = {}) {
+  const row = document.createElement('div');
+  row.className = 'attachment-row';
+
+  const nameField = createInputField('附件名称', item.name || '', '例如 报到清单 PDF');
+  const urlField = createInputField('附件 URL', item.url || '', '例如 /uploads/xxx.pdf');
+  const typeField = createInputField('MIME 类型', item.mimeType || '', '例如 application/pdf');
+
+  const actions = document.createElement('div');
+  actions.className = 'attachment-actions';
+  const removeButton = document.createElement('button');
+  removeButton.type = 'button';
+  removeButton.className = 'remove-button';
+  removeButton.textContent = '删除附件';
+  removeButton.addEventListener('click', () => row.remove());
+  actions.appendChild(removeButton);
+
+  row.append(nameField.wrapper, urlField.wrapper, typeField.wrapper, actions);
+  row.getData = () => ({
+    name: nameField.input.value.trim(),
+    url: urlField.input.value.trim(),
+    mimeType: typeField.input.value.trim()
+  });
+  return row;
 }
 
-function selectSection(section) {
-  sectionButtons.forEach((button) => {
-    button.classList.toggle('active', button.dataset.section === section);
+function createGuidePostCard(item = {}) {
+  const card = document.createElement('div');
+  card.className = 'sub-item-card';
+
+  const header = document.createElement('div');
+  header.className = 'item-card-title';
+  header.textContent = item.title || '帖子';
+  const removeButton = document.createElement('button');
+  removeButton.type = 'button';
+  removeButton.className = 'remove-button';
+  removeButton.textContent = '删除帖子';
+  removeButton.addEventListener('click', () => card.remove());
+  header.appendChild(removeButton);
+  card.appendChild(header);
+
+  const titleField = createInputField('帖子标题', item.title || '');
+  const summaryField = createTextAreaField('帖子摘要', item.summary || '');
+  const coverField = createInputField('封面图片 URL', item.coverImageUrl || '', '例如 /uploads/cover.jpg');
+
+  const htmlField = document.createElement('div');
+  htmlField.className = 'field-row';
+  const htmlLabel = document.createElement('label');
+  htmlLabel.textContent = '正文内容（富文本）';
+  const editor = document.createElement('div');
+  editor.className = 'rich-editor';
+  editor.contentEditable = 'true';
+  editor.innerHTML = item.contentHtml || '<p>请编辑正文内容...</p>';
+
+  const toolbar = createToolbar(editor);
+  htmlField.append(htmlLabel, toolbar, editor);
+
+  const attachmentBlock = document.createElement('div');
+  attachmentBlock.className = 'field-row';
+  const attachmentLabel = document.createElement('label');
+  attachmentLabel.textContent = '附件列表';
+  const attachmentContainer = document.createElement('div');
+  (item.attachments || []).forEach((att) => {
+    attachmentContainer.appendChild(createAttachmentRow(att));
   });
-  sectionPanels.forEach((panel) => {
-    panel.classList.toggle('hidden', panel.dataset.section !== section);
+  const addAttachmentButton = document.createElement('button');
+  addAttachmentButton.type = 'button';
+  addAttachmentButton.className = 'secondary';
+  addAttachmentButton.textContent = '新增附件';
+  addAttachmentButton.addEventListener('click', () => {
+    attachmentContainer.appendChild(createAttachmentRow());
   });
+  attachmentBlock.append(attachmentLabel, attachmentContainer, addAttachmentButton);
+
+  card.append(titleField.wrapper, summaryField.wrapper, coverField.wrapper, htmlField, attachmentBlock);
+
+  card.getData = () => ({
+    title: titleField.input.value.trim(),
+    summary: summaryField.textarea.value.trim(),
+    coverImageUrl: coverField.input.value.trim(),
+    contentHtml: editor.innerHTML.trim(),
+    attachments: Array.from(attachmentContainer.children)
+      .map((row) => row.getData())
+      .filter((itemData) => itemData.url)
+  });
+
+  return card;
+}
+
+function createGuideCategoryCard(item = {}) {
+  const card = createCard(item.title || '分类');
+  const idField = createInputField('分类 ID（英文）', item.id || `category_${Date.now()}`);
+  const titleField = createInputField('分类标题', item.title || '');
+  const subtitleField = createInputField('分类副标题', item.subtitle || '');
+
+  const postsWrap = document.createElement('div');
+  const postsLabel = document.createElement('label');
+  postsLabel.textContent = '分类帖子';
+  postsWrap.appendChild(postsLabel);
+
+  const postsContainer = document.createElement('div');
+  (item.posts || []).forEach((post) => postsContainer.appendChild(createGuidePostCard(post)));
+
+  const addPostButton = document.createElement('button');
+  addPostButton.type = 'button';
+  addPostButton.className = 'secondary';
+  addPostButton.textContent = '新增帖子';
+  addPostButton.addEventListener('click', () => postsContainer.appendChild(createGuidePostCard()));
+
+  postsWrap.append(postsContainer, addPostButton);
+
+  card.append(idField.wrapper, titleField.wrapper, subtitleField.wrapper, postsWrap);
+
+  card.getData = () => ({
+    id: idField.input.value.trim() || `category_${Date.now()}`,
+    title: titleField.input.value.trim(),
+    subtitle: subtitleField.input.value.trim(),
+    posts: Array.from(postsContainer.children)
+      .map((postCard) => postCard.getData())
+      .filter((post) => post.title || post.summary || post.contentHtml)
+  });
+
+  return card;
+}
+
+function renderGuideConfig(config) {
+  const guidePage = { ...defaultGuideConfig, ...(config.guidePage || {}) };
+
+  guideEntryTitleInput.value = guidePage.entryTitle || '';
+  guideEntryDescriptionInput.value = guidePage.entryDescription || '';
+  guidePageTitleInput.value = guidePage.pageTitle || '';
+  guidePageSubtitleInput.value = guidePage.pageSubtitle || '';
+  guideHeroTitleInput.value = guidePage.heroTitle || '';
+  guideHeroSummaryInput.value = guidePage.heroSummary || '';
+  guideHeroImageUrlInput.value = guidePage.heroImageUrl || '';
+
+  clearContainer(guideCategoriesContainer);
+  (guidePage.categories || []).forEach((category) => {
+    guideCategoriesContainer.appendChild(createGuideCategoryCard(category));
+  });
+}
+
+function collectGuideConfig() {
+  return {
+    entryTitle: guideEntryTitleInput.value.trim(),
+    entryDescription: guideEntryDescriptionInput.value.trim(),
+    pageTitle: guidePageTitleInput.value.trim(),
+    pageSubtitle: guidePageSubtitleInput.value.trim(),
+    heroTitle: guideHeroTitleInput.value.trim(),
+    heroSummary: guideHeroSummaryInput.value.trim(),
+    heroImageUrl: guideHeroImageUrlInput.value.trim(),
+    categories: Array.from(guideCategoriesContainer.children)
+      .map((categoryCard) => categoryCard.getData())
+      .filter((category) => category.id || category.title)
+  };
 }
 
 function renderConfig(config) {
@@ -154,6 +367,8 @@ function renderConfig(config) {
 
   clearContainer(faqItemsContainer);
   (config.faq || []).forEach((item) => faqItemsContainer.appendChild(createFaqCard(item)));
+
+  renderGuideConfig(config);
 }
 
 function collectConfig() {
@@ -170,7 +385,8 @@ function collectConfig() {
     defaultAnswer: defaultAnswerInput.value.trim() || '您好，这是新生答疑助手，目前未找到精准答案，请换一种说法或参考官方通知。',
     stickyContacts: Array.from(stickyContactsContainer.children).map((card) => card.getData()),
     featureButtons: Array.from(featureButtonsContainer.children).map((card) => card.getData()),
-    faq: Array.from(faqItemsContainer.children).map((card) => card.getData())
+    faq: Array.from(faqItemsContainer.children).map((card) => card.getData()),
+    guidePage: collectGuideConfig()
   };
 }
 
@@ -202,7 +418,7 @@ async function saveConfig() {
     if (result.ok) {
       currentConfig = config;
       setStatus('保存成功，前端和问答结果已更新。');
-      showModal('配置已成功保存，可返回首页查看最新效果。');
+      showModal('配置已成功保存，可返回首页和导览页查看最新效果。');
     } else {
       setStatus('保存失败：' + (result.error || '未知错误。'));
     }
@@ -212,8 +428,43 @@ async function saveConfig() {
   }
 }
 
+async function uploadFile() {
+  if (!guideUploadInput.files || guideUploadInput.files.length === 0) {
+    uploadResult.textContent = '请先选择文件。';
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('file', guideUploadInput.files[0]);
+
+  uploadResult.textContent = '正在上传...';
+
+  try {
+    const resp = await fetch(`${baseUrl}/api/upload`, {
+      method: 'POST',
+      body: formData
+    });
+    const result = await resp.json();
+
+    if (!result.ok || !result.file) {
+      uploadResult.textContent = '上传失败：' + (result.error || '未知错误');
+      return;
+    }
+
+    uploadResult.textContent = `上传成功：${result.file.url}（可复制到封面图或附件 URL）`;
+  } catch (error) {
+    uploadResult.textContent = '上传失败，请检查网络或后端。';
+    console.error(error);
+  }
+}
+
 function setStatus(text) {
   statusEl.textContent = text;
+}
+
+function showModal(message) {
+  saveModalMessage.textContent = message;
+  saveModal.classList.remove('hidden');
 }
 
 loadConfigButton.addEventListener('click', loadConfig);
@@ -221,14 +472,13 @@ saveConfigButton.addEventListener('click', saveConfig);
 addStickyButton.addEventListener('click', () => stickyContactsContainer.appendChild(createStickyCard()));
 addFeatureButton.addEventListener('click', () => featureButtonsContainer.appendChild(createFeatureCard()));
 addFaqButton.addEventListener('click', () => faqItemsContainer.appendChild(createFaqCard()));
+addGuideCategoryButton.addEventListener('click', () => guideCategoriesContainer.appendChild(createGuideCategoryCard()));
+guideUploadButton.addEventListener('click', uploadFile);
+
 sectionButtons.forEach((button) => {
   button.addEventListener('click', () => selectSection(button.dataset.section));
 });
+
 closeModalButton.addEventListener('click', () => saveModal.classList.add('hidden'));
 dialogBackdrop.addEventListener('click', () => saveModal.classList.add('hidden'));
 window.addEventListener('load', loadConfig);
-
-function showModal(message) {
-  saveModalMessage.textContent = message;
-  saveModal.classList.remove('hidden');
-}
