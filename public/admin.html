@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>后台配置 · 新生答疑助手</title>
-    <link rel="stylesheet" href="admin.css" />
+    <link rel="stylesheet" href="/admin.css" />
   </head>
   <body>
     <div class="admin-shell">
@@ -15,6 +15,34 @@
         </div>
         <a class="admin-back" href="/">返回首页</a>
       </header>
+      <section class="view-stats" aria-labelledby="viewStatsTitle">
+        <div class="view-stats-heading">
+          <div>
+            <span class="view-stats-eyebrow">站点数据</span>
+            <h2 id="viewStatsTitle">浏览量统计</h2>
+          </div>
+          <button type="button" class="secondary" id="refreshViewStats">刷新数据</button>
+        </div>
+        <div class="view-stats-grid">
+          <div class="view-stat-card">
+            <strong id="totalViews">—</strong>
+            <span>全站累计浏览</span>
+          </div>
+          <div class="view-stat-card">
+            <strong id="todayViews">—</strong>
+            <span>今日浏览</span>
+          </div>
+          <div class="view-stat-card">
+            <strong id="homeViews">—</strong>
+            <span>首页浏览</span>
+          </div>
+          <div class="view-stat-card">
+            <strong id="guideViews">—</strong>
+            <span>校园导览浏览</span>
+          </div>
+        </div>
+        <p class="view-stats-updated" id="viewStatsUpdated">正在加载统计数据…</p>
+      </section>
       <section class="admin-actions">
         <button id="loadConfig">加载配置</button>
         <button id="saveConfig">保存配置</button>
@@ -170,6 +198,6 @@
       </div>
     </div>
 
-    <script src="admin.js"></script>
+    <script src="/admin.js"></script>
   </body>
 </html>

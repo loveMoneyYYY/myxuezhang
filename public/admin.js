@@ -1,6 +1,12 @@
 const loadConfigButton = document.getElementById('loadConfig');
 const saveConfigButton = document.getElementById('saveConfig');
 const statusEl = document.getElementById('status');
+const refreshViewStatsButton = document.getElementById('refreshViewStats');
+const totalViewsEl = document.getElementById('totalViews');
+const todayViewsEl = document.getElementById('todayViews');
+const homeViewsEl = document.getElementById('homeViews');
+const guideViewsEl = document.getElementById('guideViews');
+const viewStatsUpdatedEl = document.getElementById('viewStatsUpdated');
 const siteTitleInput = document.getElementById('siteTitle');
 const heroTitleInput = document.getElementById('heroTitle');
 const heroSubtitleInput = document.getElementById('heroSubtitle');
@@ -45,6 +51,34 @@ const previewContent = document.getElementById('previewContent');
 
 const baseUrl = window.location.origin;
 let currentConfig = {};
+
+function formatViewCount(value) {
+  return new Intl.NumberFormat('zh-CN').format(Number(value || 0));
+}
+
+async function loadViewStats() {
+  if (!totalViewsEl) return;
+  viewStatsUpdatedEl.textContent = '正在加载统计数据…';
+  try {
+    const response = await fetch(`${baseUrl}/api/view-stats`, { cache: 'no-store' });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const stats = await response.json();
+    totalViewsEl.textContent = formatViewCount(stats.totalViews);
+    todayViewsEl.textContent = formatViewCount(stats.todayViews);
+    homeViewsEl.textContent = formatViewCount(stats.pages && stats.pages['/'] && stats.pages['/'].totalViews);
+    guideViewsEl.textContent = formatViewCount(stats.pages && stats.pages['/guide'] && stats.pages['/guide'].totalViews);
+    viewStatsUpdatedEl.textContent = `统计已更新：${new Date().toLocaleString('zh-CN')}`;
+  } catch (error) {
+    totalViewsEl.textContent = '—';
+    todayViewsEl.textContent = '—';
+    homeViewsEl.textContent = '—';
+    guideViewsEl.textContent = '—';
+    viewStatsUpdatedEl.textContent = '统计数据加载失败，请稍后重试。';
+    console.error('Load view stats failed:', error);
+  }
+}
 
 const defaultGuideConfig = {
   entryTitle: '报到、宿舍、生活分类帖文',
@@ -705,6 +739,7 @@ function showModal(message) {
 
 loadConfigButton.addEventListener('click', loadConfig);
 saveConfigButton.addEventListener('click', saveConfig);
+refreshViewStatsButton.addEventListener('click', loadViewStats);
 addStickyButton.addEventListener('click', () => stickyContactsContainer.appendChild(createStickyCard()));
 addFeatureButton.addEventListener('click', () => featureButtonsContainer.appendChild(createFeatureCard()));
 addFaqButton.addEventListener('click', () => faqItemsContainer.appendChild(createFaqCard()));
@@ -726,3 +761,4 @@ document.addEventListener('keydown', (event) => {
   }
 });
 window.addEventListener('load', loadConfig);
+window.addEventListener('load', loadViewStats);

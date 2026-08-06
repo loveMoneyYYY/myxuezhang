@@ -7,12 +7,29 @@ const { findAnswer } = require('./lib/qa');
 const {
   closeStorage,
   getAdminPassword,
+  getViewStats,
   initializeStorage,
   loadConfig,
+  recordPageView,
   saveConfig
 } = require('./storage');
 
 const app = express();
+function resolveAdminPath() {
+  const configuredPath = String(process.env.ADMIN_PATH || '/qdbh-console-7f3a9d2c').trim();
+  const normalizedPath = `/${configuredPath.replace(/^\/+|\/+$/g, '')}`;
+  if (!/^\/[a-zA-Z0-9_-]{8,80}$/.test(normalizedPath)) {
+    throw new Error('ADMIN_PATH must be a single URL path segment containing 8-80 letters, numbers, hyphens, or underscores.');
+  }
+  return normalizedPath;
+}
+
+const ADMIN_PATH = resolveAdminPath();
+const ADMIN_LOGIN_PATH = `${ADMIN_PATH}/login`;
+const ADMIN_LOGOUT_PATH = `${ADMIN_PATH}/logout`;
+const LEGACY_ADMIN_PATH = /^\/admin(?:\/|$)/;
+const SECURE_COOKIE_ATTRIBUTE = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+
 function resolvePort() {
   const explicitPort = process.env.PORT || process.env.APP_PORT;
   if (explicitPort) {
@@ -76,7 +93,7 @@ function authMiddleware(req, res, next) {
   if (isAuthenticated(req)) {
     return next();
   }
-  return res.redirect('/admin/login');
+  return res.redirect(ADMIN_LOGIN_PATH);
 }
 
 function getPublicConfig(config) {
@@ -84,23 +101,31 @@ function getPublicConfig(config) {
   return publicConfig;
 }
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ extended: false, limit: '20kb' }));
 
 fs.mkdir(uploadDir, { recursive: true }).catch((error) => {
   console.error('Create upload directory failed:', error);
 });
 
 app.use((req, res, next) => {
-  // The admin page and write APIs are protected. Static CSS/JS must remain
-  // public so the login page and the proxied admin page can render correctly.
-  const protectedPaths = ['/admin', '/admin.html'];
-  const needAuth =
-    protectedPaths.includes(req.path) ||
-    (req.path === '/api/config' && req.method === 'POST') ||
-    (req.path === '/api/upload' && req.method === 'POST');
-  if (needAuth) {
-    return authMiddleware(req, res, next);
+  // Do not leave the old, commonly scanned /admin entry point available.
+  // The administration page is only exposed through ADMIN_PATH.
+  if (LEGACY_ADMIN_PATH.test(req.path) || req.path === '/admin.html') {
+    return res.status(404).send('Not Found');
+  }
+  next();
+});
+
+app.use((req, res, next) => {
+  if (req.method === 'GET' && (req.path === '/' || req.path === '/guide')) {
+    res.on('finish', () => {
+      if (res.statusCode === 200) {
+        recordPageView(req.path).catch((error) => {
+          console.error('Record page view failed:', error);
+        });
+      }
+    });
   }
   next();
 });
@@ -111,44 +136,43 @@ app.get('/guide', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'guide.html'));
 });
 
-app.get('/admin', (req, res) => {
-  if (!isAuthenticated(req)) {
-    return res.redirect('/admin/login');
-  }
+app.get(ADMIN_PATH, authMiddleware, (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
-app.get('/admin/login', async (req, res) => {
+app.get(ADMIN_LOGIN_PATH, async (req, res) => {
   if (isAuthenticated(req)) {
-    return res.redirect('/admin');
+    return res.redirect(ADMIN_PATH);
   }
 
   const loginFile = path.join(__dirname, 'public', 'admin-login.html');
   let html = await fs.readFile(loginFile, 'utf8');
   const errorText = req.query.error ? '登录失败，密码错误。' : '';
-  html = html.replace('%ERROR%', errorText);
+  html = html
+    .replace('%ERROR%', errorText)
+    .replace('%ADMIN_LOGIN_ACTION%', ADMIN_LOGIN_PATH);
   res.send(html);
 });
 
-app.post('/admin/login', async (req, res) => {
+app.post(ADMIN_LOGIN_PATH, async (req, res) => {
   const { password } = req.body;
   const expectedPassword = await getAdminPassword();
   if (password === expectedPassword) {
     const token = createSessionToken();
     sessions.add(token);
-    res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${token}; HttpOnly; Path=/; SameSite=Lax`);
-    return res.redirect('/admin');
+    res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${token}; HttpOnly${SECURE_COOKIE_ATTRIBUTE}; Path=/; SameSite=Strict; Max-Age=3600`);
+    return res.redirect(ADMIN_PATH);
   }
-  return res.redirect('/admin/login?error=1');
+  return res.redirect(`${ADMIN_LOGIN_PATH}?error=1`);
 });
 
-app.get('/admin/logout', authMiddleware, (req, res) => {
+app.get(ADMIN_LOGOUT_PATH, authMiddleware, (req, res) => {
   const cookies = parseCookies(req);
   if (cookies[SESSION_COOKIE]) {
     sessions.delete(cookies[SESSION_COOKIE]);
   }
-  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; HttpOnly; Path=/; Max-Age=0`);
-  res.redirect('/admin/login');
+  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; HttpOnly${SECURE_COOKIE_ATTRIBUTE}; Path=/; SameSite=Strict; Max-Age=0`);
+  res.redirect(ADMIN_LOGIN_PATH);
 });
 
 app.get('/api/config', async (req, res) => {
@@ -156,7 +180,7 @@ app.get('/api/config', async (req, res) => {
   res.json(getPublicConfig(config));
 });
 
-app.post('/api/config', async (req, res) => {
+app.post('/api/config', authMiddleware, async (req, res) => {
   const config = { ...req.body };
   if (!config || typeof config !== 'object') {
     return res.status(400).json({ error: '无效配置数据。' });
@@ -183,7 +207,16 @@ app.post('/api/question', async (req, res) => {
   res.json({ answer });
 });
 
-app.post('/api/upload', upload.single('file'), (req, res) => {
+app.get('/api/view-stats', authMiddleware, async (_req, res) => {
+  try {
+    res.json(await getViewStats());
+  } catch (error) {
+    console.error('Load view stats failed:', error);
+    res.status(500).json({ error: 'Unable to load view statistics.' });
+  }
+});
+
+app.post('/api/upload', authMiddleware, upload.single('file'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: '未接收到上传文件。' });
   }

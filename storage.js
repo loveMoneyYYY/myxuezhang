@@ -5,6 +5,7 @@ const path = require('path');
 const { Pool } = require('pg');
 
 const configPath = path.join(__dirname, 'config.json');
+const viewStatsPath = path.join(__dirname, 'view-stats.json');
 const migrationsDir = path.join(__dirname, 'migrations');
 
 let pool;
@@ -156,17 +157,107 @@ async function saveConfig(config) {
   );
 }
 
+async function readLocalViewStats() {
+  try {
+    const text = await fs.readFile(viewStatsPath, 'utf8');
+    return JSON.parse(text);
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return { totalViews: 0, todayViews: 0, date: new Date().toISOString().slice(0, 10), pages: {} };
+    }
+    throw error;
+  }
+}
+
+async function writeLocalViewStats(stats) {
+  await fs.writeFile(viewStatsPath, JSON.stringify(stats, null, 2), 'utf8');
+}
+
+async function recordPageView(pagePath) {
+  const normalizedPath = pagePath === '/guide' ? '/guide' : '/';
+  const database = getPool();
+  if (database) {
+    await database.query(
+      `INSERT INTO site_page_views (page_path, total_views, today_views, stat_date)
+       VALUES ($1, 1, 1, CURRENT_DATE)
+       ON CONFLICT (page_path)
+       DO UPDATE SET
+         total_views = site_page_views.total_views + 1,
+         today_views = CASE
+           WHEN site_page_views.stat_date = CURRENT_DATE THEN site_page_views.today_views + 1
+           ELSE 1
+         END,
+         stat_date = CURRENT_DATE,
+         updated_at = NOW()`,
+      [normalizedPath]
+    );
+    return;
+  }
+
+  const stats = await readLocalViewStats();
+  const today = new Date().toISOString().slice(0, 10);
+  if (stats.date !== today) {
+    stats.date = today;
+    stats.todayViews = 0;
+    Object.values(stats.pages || {}).forEach((page) => {
+      page.todayViews = 0;
+    });
+  }
+  stats.totalViews = Number(stats.totalViews || 0) + 1;
+  stats.todayViews = Number(stats.todayViews || 0) + 1;
+  stats.pages = stats.pages || {};
+  stats.pages[normalizedPath] = stats.pages[normalizedPath] || { totalViews: 0, todayViews: 0 };
+  stats.pages[normalizedPath].totalViews += 1;
+  stats.pages[normalizedPath].todayViews += 1;
+  await writeLocalViewStats(stats);
+}
+
+async function getViewStats() {
+  const database = getPool();
+  if (database) {
+    const result = await database.query(
+      `SELECT page_path, total_views::text, today_views::text
+       FROM site_page_views
+       ORDER BY page_path`
+    );
+    const pages = {};
+    let totalViews = 0;
+    let todayViews = 0;
+    result.rows.forEach((row) => {
+      const pageStats = {
+        totalViews: Number(row.total_views),
+        todayViews: Number(row.today_views)
+      };
+      pages[row.page_path] = pageStats;
+      totalViews += pageStats.totalViews;
+      todayViews += pageStats.todayViews;
+    });
+    return { totalViews, todayViews, pages };
+  }
+
+  const stats = await readLocalViewStats();
+  const today = new Date().toISOString().slice(0, 10);
+  if (stats.date !== today) {
+    stats.date = today;
+    stats.todayViews = 0;
+    Object.values(stats.pages || {}).forEach((page) => {
+      page.todayViews = 0;
+    });
+    await writeLocalViewStats(stats);
+  }
+  return {
+    totalViews: Number(stats.totalViews || 0),
+    todayViews: Number(stats.todayViews || 0),
+    pages: stats.pages || {}
+  };
+}
+
 async function getAdminPassword() {
   if (process.env.ADMIN_PASSWORD) {
     return process.env.ADMIN_PASSWORD;
   }
 
-  try {
-    const config = await readFileConfig();
-    return config.adminPassword || 'admin123';
-  } catch (_error) {
-    return 'admin123';
-  }
+  throw new Error('ADMIN_PASSWORD is not configured. Refusing to use a default admin password.');
 }
 
 async function closeStorage() {
@@ -183,6 +274,8 @@ module.exports = {
   initializeStorage,
   isDatabaseConfigured,
   loadConfig,
+  getViewStats,
+  recordPageView,
   runMigration,
   saveConfig
 };
