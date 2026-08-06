@@ -61,13 +61,23 @@ jobs:
               sleep 2
             done
 
-            # Verify both public entry points and make sure Nginx returns the
-            # same page as the Node process for the main public routes.
-            for path in / /guide /admin /admin/login /admin.css /admin.js; do
+            # Verify public entry points and the private admin login page. The legacy
+            # /admin paths are intentionally expected to return 404.
+            ADMIN_PATH=$(sed -n 's/^ADMIN_PATH=//p' .env | head -n 1 | tr -d '\r')
+            ADMIN_PATH=${ADMIN_PATH:-/qdbh-console-7f3a9d2c}
+            ADMIN_LOGIN_PATH="${ADMIN_PATH%/}/login"
+
+            for path in / /guide /admin.css /admin.js "$ADMIN_LOGIN_PATH"; do
               curl --fail --silent --show-error --max-time 10 "http://127.0.0.1:3000${path}" > /dev/null
               curl --fail --silent --show-error --max-time 10 "http://127.0.0.1${path}" > /dev/null
             done
-            for path in / /guide /admin.css /admin.js; do
+
+            legacy_admin_status=$(curl --silent --show-error --max-time 10 -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/admin)
+            legacy_login_status=$(curl --silent --show-error --max-time 10 -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/admin/login)
+            test "$legacy_admin_status" = "404"
+            test "$legacy_login_status" = "404"
+
+            for path in / /guide /admin.css /admin.js "$ADMIN_LOGIN_PATH"; do
               node_hash=$(curl --fail --silent --show-error --max-time 10 "http://127.0.0.1:3000${path}" | sha256sum | awk '{print $1}')
               nginx_hash=$(curl --fail --silent --show-error --max-time 10 "http://127.0.0.1${path}" | sha256sum | awk '{print $1}')
               test "$node_hash" = "$nginx_hash"
