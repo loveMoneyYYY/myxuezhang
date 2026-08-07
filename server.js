@@ -49,6 +49,18 @@ const uploadDir = configuredUploadDir
   : path.join(__dirname, 'public', 'uploads');
 const SESSION_COOKIE = 'admin_session';
 const sessions = new Set();
+const DEFAULT_ANSWER_TYPING_SPEED = 45;
+
+function normalizeAnswerTypingSpeed(value) {
+  if (value === '' || value === null || typeof value === 'undefined') {
+    return DEFAULT_ANSWER_TYPING_SPEED;
+  }
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return DEFAULT_ANSWER_TYPING_SPEED;
+  }
+  return Math.min(1000, Math.max(0, Math.round(parsed)));
+}
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
@@ -98,6 +110,7 @@ function authMiddleware(req, res, next) {
 
 function getPublicConfig(config) {
   const { adminPassword, ...publicConfig } = config;
+  publicConfig.answerTypingSpeed = normalizeAnswerTypingSpeed(publicConfig.answerTypingSpeed);
   return publicConfig;
 }
 
@@ -188,6 +201,7 @@ app.post('/api/config', authMiddleware, async (req, res) => {
 
   try {
     delete config.adminPassword;
+    config.answerTypingSpeed = normalizeAnswerTypingSpeed(config.answerTypingSpeed);
     await saveConfig(config);
     res.json({ ok: true });
   } catch (error) {

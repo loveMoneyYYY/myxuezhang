@@ -37,6 +37,7 @@ const entryModalTitle = document.getElementById('entryModalTitle');
 const downloadModal = document.getElementById('downloadModal');
 const downloadModalBackdrop = document.getElementById('downloadModalBackdrop');
 const downloadModalClose = document.getElementById('downloadModalClose');
+const DEFAULT_ANSWER_TYPING_SPEED = 45;
 let chatScrollTimer = 0;
 let entryModalShown = false;
 
@@ -50,6 +51,7 @@ const defaultConfig = {
   siteLogoUrl: '/pic/学校logo.png',
   heroImageUrl: '/pic/hero-bg.svg',
   qrImageUrl: '/pic/wechat-qr.svg',
+  answerTypingSpeed: DEFAULT_ANSWER_TYPING_SPEED,
   phone: '0532-86728687',
   address: '山东省青岛市黄岛区嘉陵江西路425号',
   stickyContacts: [
@@ -139,7 +141,7 @@ function createInfoCard(icon, title, text) {
   return card;
 }
 
-function scrollToLatestMessage() {
+function scrollToLatestMessage(behavior = 'smooth') {
   const latestMessage = chatHistory.lastElementChild;
   if (!latestMessage) {
     return;
@@ -150,7 +152,7 @@ function scrollToLatestMessage() {
   }
 
   chatScrollTimer = window.setTimeout(() => {
-    latestMessage.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
+    latestMessage.scrollIntoView({ behavior, block: 'end', inline: 'nearest' });
   }, 0);
 }
 
@@ -160,6 +162,37 @@ function appendMessage(text, role) {
   el.textContent = text;
   chatHistory.appendChild(el);
   scrollToLatestMessage();
+  return el;
+}
+
+function getAnswerTypingSpeed() {
+  const configuredSpeed = clientConfig && clientConfig.answerTypingSpeed;
+  if (configuredSpeed === '' || configuredSpeed === null || typeof configuredSpeed === 'undefined') {
+    return DEFAULT_ANSWER_TYPING_SPEED;
+  }
+  const value = Number(configuredSpeed);
+  if (!Number.isFinite(value)) {
+    return DEFAULT_ANSWER_TYPING_SPEED;
+  }
+  return Math.min(1000, Math.max(0, Math.round(value)));
+}
+
+function waitForTypingStep(delay) {
+  return new Promise((resolve) => window.setTimeout(resolve, delay));
+}
+
+async function typeAnswer(messageElement, answer) {
+  const characters = Array.from(String(answer || ''));
+  const delay = getAnswerTypingSpeed();
+  messageElement.textContent = '';
+
+  for (let index = 0; index < characters.length; index += 1) {
+    messageElement.appendChild(document.createTextNode(characters[index]));
+    scrollToLatestMessage('auto');
+    if (delay > 0 && index < characters.length - 1) {
+      await waitForTypingStep(delay);
+    }
+  }
 }
 
 async function loadConfig() {
@@ -319,7 +352,7 @@ async function handleSubmit(event) {
 
   appendMessage(question, 'user');
   chatInput.value = '';
-  appendMessage('正在为你回答，请稍等...', 'ai');
+  const answerMessage = appendMessage('正在为你回答，请稍等...', 'ai');
 
   try {
     const response = await fetch(questionEndpoint, {
@@ -327,11 +360,14 @@ async function handleSubmit(event) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question })
     });
+    if (!response.ok) {
+      throw new Error(`Question request failed: ${response.status}`);
+    }
     const result = await response.json();
-    chatHistory.lastChild.textContent = result.answer || '出错了，请稍后重试。';
+    await typeAnswer(answerMessage, result.answer || '出错了，请稍后重试。');
     scrollToLatestMessage();
   } catch (error) {
-    chatHistory.lastChild.textContent = '网络异常，请检查服务器是否已启动。';
+    answerMessage.textContent = '网络异常，请检查服务器是否已启动。';
     scrollToLatestMessage();
   }
 }

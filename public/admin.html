@@ -99,6 +99,11 @@
                 <label>默认回答</label>
                 <textarea id="defaultAnswer"></textarea>
               </div>
+              <div class="field-row">
+                <label for="answerTypingSpeed">回答逐字显示速度（每字间隔，毫秒）</label>
+                <input id="answerTypingSpeed" type="number" min="0" max="1000" step="5" placeholder="默认 45，数值越小越快" />
+                <small class="field-hint">控制首页回答逐字显示的间隔时间，建议设置为 20–120 毫秒。</small>
+              </div>
             </section>
 
             <section class="section-panel hidden" data-section="guide">

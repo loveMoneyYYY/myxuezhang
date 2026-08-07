@@ -506,6 +506,7 @@
   "siteLogoUrl": "/pic/学校logo.png",
   "heroImageUrl": "/pic/学校校门.jpg",
   "qrImageUrl": "/pic/微信名片.jpg",
+  "answerTypingSpeed": 45,
   "guidePage": {
     "entryTitle": "报到、宿舍、生活分类帖文",
     "entryDescription": "支持分类、折叠与附件预览，点击进入查看完整内容。",

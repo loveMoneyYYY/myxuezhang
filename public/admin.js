@@ -29,6 +29,9 @@ const saveModal = document.getElementById('saveModal');
 const dialogBackdrop = document.getElementById('dialogBackdrop');
 const closeModalButton = document.getElementById('closeModal');
 const saveModalMessage = document.getElementById('saveModalMessage');
+const answerTypingSpeedInput = document.getElementById('answerTypingSpeed');
+
+const DEFAULT_ANSWER_TYPING_SPEED = 45;
 
 const guideEntryTitleInput = document.getElementById('guideEntryTitle');
 const guideEntryDescriptionInput = document.getElementById('guideEntryDescription');
@@ -51,6 +54,17 @@ const previewContent = document.getElementById('previewContent');
 
 const baseUrl = window.location.origin;
 let currentConfig = {};
+
+function normalizeTypingSpeed(value) {
+  if (value === '' || value === null || typeof value === 'undefined') {
+    return DEFAULT_ANSWER_TYPING_SPEED;
+  }
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return DEFAULT_ANSWER_TYPING_SPEED;
+  }
+  return Math.min(1000, Math.max(0, Math.round(parsed)));
+}
 
 function formatViewCount(value) {
   return new Intl.NumberFormat('zh-CN').format(Number(value || 0));
@@ -404,6 +418,7 @@ function renderConfig(config) {
   heroImageInput.value = config.heroImageUrl || '';
   qrImageInput.value = config.qrImageUrl || '';
   defaultAnswerInput.value = config.defaultAnswer || '';
+  answerTypingSpeedInput.value = normalizeTypingSpeed(config.answerTypingSpeed);
 
   clearContainer(stickyContactsContainer);
   (config.stickyContacts || []).forEach((item) => stickyContactsContainer.appendChild(createStickyCard(item)));
@@ -429,6 +444,7 @@ function collectConfig() {
     heroImageUrl: heroImageInput.value.trim(),
     qrImageUrl: qrImageInput.value.trim(),
     defaultAnswer: defaultAnswerInput.value.trim() || '您好，这是新生答疑助手，目前未找到精准答案，请换一种说法或参考官方通知。',
+    answerTypingSpeed: normalizeTypingSpeed(answerTypingSpeedInput.value),
     stickyContacts: Array.from(stickyContactsContainer.children).map((card) => card.getData()),
     featureButtons: Array.from(featureButtonsContainer.children).map((card) => card.getData()),
     faq: Array.from(faqItemsContainer.children).map((card) => card.getData()),
