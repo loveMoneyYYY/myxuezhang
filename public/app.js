@@ -153,7 +153,14 @@ function updateChatSafeArea() {
   document.documentElement.style.setProperty('--chat-safe-bottom', `${safeBottom}px`);
 }
 
-function scrollToLatestMessage(behavior = 'smooth') {
+function getChatSafeBottom() {
+  const value = Number.parseFloat(
+    window.getComputedStyle(document.documentElement).getPropertyValue('--chat-safe-bottom')
+  );
+  return Number.isFinite(value) ? value : 180;
+}
+
+function scrollToLatestMessage(behavior = 'auto') {
   updateChatSafeArea();
   const latestMessage = chatHistory.lastElementChild;
   if (!latestMessage) {
@@ -165,7 +172,20 @@ function scrollToLatestMessage(behavior = 'smooth') {
   }
 
   chatScrollTimer = window.setTimeout(() => {
-    latestMessage.scrollIntoView({ behavior, block: 'end', inline: 'nearest' });
+    if (!document.documentElement.contains(latestMessage)) {
+      return;
+    }
+
+    const bottomBarTop = bottomBar
+      ? bottomBar.getBoundingClientRect().top
+      : window.innerHeight - getChatSafeBottom();
+    const visibleBottom = Math.max(0, bottomBarTop - 16);
+    const messageBottom = latestMessage.getBoundingClientRect().bottom;
+    const overlap = messageBottom - visibleBottom;
+
+    if (overlap > 0) {
+      window.scrollBy({ top: overlap, left: 0, behavior });
+    }
   }, 0);
 }
 
