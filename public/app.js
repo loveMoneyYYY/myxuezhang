@@ -3,6 +3,7 @@ const questionEndpoint = '/api/question';
 const chatHistory = document.getElementById('chatHistory');
 const chatForm = document.getElementById('chatForm');
 const chatInput = document.getElementById('chatInput');
+const bottomBar = document.querySelector('.bottom-bar');
 const heroContacts = document.getElementById('heroContacts');
 const menuButtons = document.getElementById('menuButtons');
 const heroInfoCards = document.getElementById('heroInfoCards');
@@ -142,7 +143,18 @@ function createInfoCard(icon, title, text) {
   return card;
 }
 
+function updateChatSafeArea() {
+  if (!bottomBar) {
+    return;
+  }
+
+  const bottomBarHeight = Math.ceil(bottomBar.getBoundingClientRect().height);
+  const safeBottom = Math.max(140, bottomBarHeight + 24);
+  document.documentElement.style.setProperty('--chat-safe-bottom', `${safeBottom}px`);
+}
+
 function scrollToLatestMessage(behavior = 'smooth') {
+  updateChatSafeArea();
   const latestMessage = chatHistory.lastElementChild;
   if (!latestMessage) {
     return;
@@ -419,6 +431,15 @@ if (window.MutationObserver && chatHistory) {
     scrollToLatestMessage();
   });
   chatObserver.observe(chatHistory, { childList: true, subtree: false });
+}
+
+if (bottomBar) {
+  updateChatSafeArea();
+  window.addEventListener('resize', updateChatSafeArea);
+  if (window.ResizeObserver) {
+    const bottomBarObserver = new ResizeObserver(updateChatSafeArea);
+    bottomBarObserver.observe(bottomBar);
+  }
 }
 
 chatForm.addEventListener('submit', handleSubmit);
