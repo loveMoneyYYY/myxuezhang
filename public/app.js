@@ -38,6 +38,7 @@ const downloadModal = document.getElementById('downloadModal');
 const downloadModalBackdrop = document.getElementById('downloadModalBackdrop');
 const downloadModalClose = document.getElementById('downloadModalClose');
 const DEFAULT_ANSWER_TYPING_SPEED = 45;
+const MIN_THINKING_DURATION_MS = 650;
 let chatScrollTimer = 0;
 let entryModalShown = false;
 
@@ -165,6 +166,29 @@ function appendMessage(text, role) {
   return el;
 }
 
+function appendThinkingMessage() {
+  const el = document.createElement('div');
+  el.className = 'chat-message ai ai-thinking';
+  el.setAttribute('aria-live', 'polite');
+
+  const label = document.createElement('span');
+  label.className = 'thinking-label';
+  label.textContent = '正在思考';
+
+  const dots = document.createElement('span');
+  dots.className = 'thinking-dots';
+  dots.setAttribute('aria-hidden', 'true');
+  for (let index = 0; index < 3; index += 1) {
+    const dot = document.createElement('span');
+    dots.appendChild(dot);
+  }
+
+  el.append(label, dots);
+  chatHistory.appendChild(el);
+  scrollToLatestMessage();
+  return el;
+}
+
 function getAnswerTypingSpeed() {
   const configuredSpeed = clientConfig && clientConfig.answerTypingSpeed;
   if (configuredSpeed === '' || configuredSpeed === null || typeof configuredSpeed === 'undefined') {
@@ -182,16 +206,26 @@ function waitForTypingStep(delay) {
 }
 
 async function typeAnswer(messageElement, answer) {
-  const characters = Array.from(String(answer || ''));
+  const normalizedAnswer = String(answer || '')
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/\\r/g, '\n')
+    .replace(/\r\n?/g, '\n');
+  const characters = Array.from(normalizedAnswer);
   const delay = getAnswerTypingSpeed();
   messageElement.textContent = '';
+  messageElement.classList.add('is-typing');
 
-  for (let index = 0; index < characters.length; index += 1) {
-    messageElement.appendChild(document.createTextNode(characters[index]));
-    scrollToLatestMessage('auto');
-    if (delay > 0 && index < characters.length - 1) {
-      await waitForTypingStep(delay);
+  try {
+    for (let index = 0; index < characters.length; index += 1) {
+      messageElement.appendChild(document.createTextNode(characters[index]));
+      scrollToLatestMessage('auto');
+      if (delay > 0 && index < characters.length - 1) {
+        await waitForTypingStep(delay);
+      }
     }
+  } finally {
+    messageElement.classList.remove('is-typing');
   }
 }
 
@@ -352,7 +386,8 @@ async function handleSubmit(event) {
 
   appendMessage(question, 'user');
   chatInput.value = '';
-  const answerMessage = appendMessage('正在为你回答，请稍等...', 'ai');
+  const thinkingStartedAt = Date.now();
+  const thinkingMessage = appendThinkingMessage();
 
   try {
     const response = await fetch(questionEndpoint, {
@@ -364,10 +399,17 @@ async function handleSubmit(event) {
       throw new Error(`Question request failed: ${response.status}`);
     }
     const result = await response.json();
+    const thinkingRemaining = MIN_THINKING_DURATION_MS - (Date.now() - thinkingStartedAt);
+    if (thinkingRemaining > 0) {
+      await waitForTypingStep(thinkingRemaining);
+    }
+    const answerMessage = appendMessage('', 'ai');
+    thinkingMessage.remove();
     await typeAnswer(answerMessage, result.answer || '出错了，请稍后重试。');
     scrollToLatestMessage();
   } catch (error) {
-    answerMessage.textContent = '网络异常，请检查服务器是否已启动。';
+    thinkingMessage.classList.remove('ai-thinking');
+    thinkingMessage.textContent = '网络异常，请检查服务器是否已启动。';
     scrollToLatestMessage();
   }
 }
